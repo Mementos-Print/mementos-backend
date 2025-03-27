@@ -1,5 +1,5 @@
 import { aToken, rToken } from "../tokens/jwt.js";
-import { alterOtp, alterUserTokens, findOtpByEmail, findRefreshTokenByUser, saveOtp, saveUserRefreshToken } from "../tokens/tokens.services.js";
+import { alterOtp, alterUserTokens, deleteOTP, findOtpByEmail, findRefreshTokenByUser, saveOtp, saveUserRefreshToken } from "../tokens/tokens.services.js";
 import { comaparePassword, hashPassword } from "../utils/bcrypt.js";
 import { sendOtp } from "../utils/email.js";
 import { generateOtp } from "../utils/otp.js";
@@ -116,6 +116,8 @@ export const validateUserOtpController = async (req, res) => {
         };
 
         await saveUserRefreshToken(userDetails.rows[0].userid, hashedToken);
+
+        await deleteOTP(email);
 
         return res.status(201).json({
             Message: "User logged in successfully!",
