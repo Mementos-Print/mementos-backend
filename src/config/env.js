@@ -15,5 +15,10 @@ export const config = {
         host: process.env.DB_HOST,
         name: process.env.DB_NAME,
         pass: process.env.DB_PASSWORD
-    }
+    },
+    email: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+    },
+    dburl: process.env.DATABASE_URL
 };

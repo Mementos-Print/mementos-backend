@@ -35,3 +35,21 @@ export const findStaffByEmail = async(email) => {
         console.error("Error finding user", error);
     }
 };
+
+export const resetStaffPassword = async(password, email) => {
+    try {
+
+        const query = `
+        UPDATE staff
+        SET password = $1
+        WHERE email = $2
+        `;
+
+        const value = [password, email];
+
+        await executeQuery(query, value);
+        
+    } catch (error) {
+        console.log("Error updating staff table");
+    }
+};
