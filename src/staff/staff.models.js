@@ -17,7 +17,7 @@ export const createStaffTable = async() => {
         await executeQuery(query, []);
         
     } catch (error) {
-        console.error("Error creating user table", error);
+        console.error("Error creating staff table", error);
     }
 };
 
