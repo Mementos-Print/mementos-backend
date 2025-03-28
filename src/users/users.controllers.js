@@ -132,9 +132,9 @@ export const loginUserController = async (req, res) => {
 
         const loggedIn = await findRefreshTokenByUser(user.rows[0].userid);
 
-        const accessToken = aToken({id: user.rows[0].userid, name: name, role: 'customer'});
+        const accessToken = aToken({id: user.rows[0].userid, name: user.rows[0].name, role: 'customer'});
 
-        const refreshToken = rToken({id: user.rows[0].userid, name: name, role: 'customer'});
+        const refreshToken = rToken({id: user.rows[0].userid, name: user.rows[0].name, role: 'customer'});
 
         const hashedToken = await hashPassword(refreshToken);
 
