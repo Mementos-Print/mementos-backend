@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { loginUserController, validateUserEmailController, validateUserOtpController } from "./users.controllers.js";
+import { loginUserController, signUpUserController, validateUserOtpController } from "./users.controllers.js";
 
 export const userRouter = Router();
 
+userRouter.post('/signUp', signUpUserController);
+userRouter.post('/verifySignUpOtp', validateUserOtpController);
 userRouter.post('/loginUser', loginUserController);
-userRouter.post('/validateEmail', validateUserEmailController);
-userRouter.post('/validateOtp', validateUserOtpController);

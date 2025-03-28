@@ -4,14 +4,14 @@ import { comaparePassword, hashPassword } from "../utils/bcrypt.js";
 import { sendOtp } from "../utils/email.js";
 import { generateOtp } from "../utils/otp.js";
 import { uniqueID } from "../utils/uuid.js";
-import { loginUserSchema, validateUserOtpSchema, validateUserSchema } from "../validators/users.js";
+import { loginUserSchema, signUpUserSchema, validateUserOtpSchema } from "../validators/users.js";
 import { findUserByEmail, signUpUser } from "./users.services.js";
 
 
-export const validateUserEmailController = async (req, res) => {
+export const signUpUserController = async (req, res) => {
     try {
 
-        const {error, value} = validateUserSchema.validate(req.body);
+        const {error, value} = signUpUserSchema.validate(req.body);
 
         if(error) {
             return res.status(400).json({
@@ -42,7 +42,7 @@ export const validateUserEmailController = async (req, res) => {
             await alterOtp(hashedOtp, email);
         
             return res.status(201).json({
-                Message: "Kindly verifyy your email by inputing the OTP sent to your provided email."
+                Message: "Kindly verify your email by inputing the OTP sent to your provided email."
             });
         
         };
@@ -90,38 +90,10 @@ export const validateUserOtpController = async (req, res) => {
 
         await signUpUser(uniqueID, email, name);
 
-        const userDetails = await findUserByEmail(email);
-
-        if(userDetails.rows.length == 0) {
-            return res.status(404).json({
-                Error: "User not found"
-            })
-        };
-
-        const loggedIn = await findRefreshTokenByUser(userDetails.rows[0].userid);
-
-        const accessToken = aToken({id: userDetails.rows[0].userid, name: name, role: 'customer'});
-
-        const refreshToken = rToken({id: userDetails.rows[0].userid, name: name, role: 'customer'});
-
-        const hashedToken = await hashPassword(refreshToken);
-
-        if (loggedIn.rows.length > 0) {
-            await alterUserTokens(userDetails.rows[0].userid, refreshToken);
-
-            return res.status(201).json({
-                Message: "User logged in successfully!",
-                accessToken, refreshToken
-            });
-        };
-
-        await saveUserRefreshToken(userDetails.rows[0].userid, hashedToken);
-
         await deleteOTP(email);
 
         return res.status(201).json({
-            Message: "User logged in successfully!",
-            accessToken, refreshToken
+            Message: "Account created successfully!"
         });
 
     } catch (error) {
@@ -146,55 +118,15 @@ export const loginUserController = async (req, res) => {
             });
         };
 
-        const {otp, email, name} = value;
-
-        const userOtp = await findOtpByEmail(email);
-
-        const isMatch = await comaparePassword(otp.toString(), userOtp.rows[0].password);
-        
-        if (!isMatch) {
-            return res.status(401).json({
-                error: "Invalid OTP"
-            })
-        };
+        const {email} = value;
 
         const user = await findUserByEmail(email);
         
-        if(user.rows.length == 0) {
+        if(user.rows.length === 0) {
 
-            await signUpUser(uniqueID, email, name);
-
-            const userDetails = await findUserByEmail(email);
-
-            if(userDetails.rows.length == 0) {
-                return res.status(404).json({
-                    Error: "User not found"
-                })
-            };
-
-            const loggedIn = await findRefreshTokenByUser(userDetails.rows[0].userid);
-
-            const accessToken = aToken({id: userDetails.rows[0].userid, name: name, role: 'customer'});
-
-            const refreshToken = rToken({id: userDetails.rows[0].userid, name: name, role: 'customer'});
-
-            const hashedToken = await hashPassword(refreshToken);
-
-            if (loggedIn.rows.length > 0) {
-                await alterUserTokens(userDetails.rows[0].userid, refreshToken);
-
-                return res.status(201).json({
-                    Message: "User logged in successfully!",
-                    accessToken, refreshToken
-                });
-            };
-
-            await saveUserRefreshToken(userDetails.rows[0].userid, hashedToken);
-
-            return res.status(201).json({
-                Message: "User logged in successfully!",
-                accessToken, refreshToken
-            });
+            return res.status(404).json({
+                Error: "User not found. Kindly create an account to login."
+            })
 
         };
 

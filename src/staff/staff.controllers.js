@@ -8,7 +8,7 @@ import { loginStaffSchema, signUpStaffSchema, verifyStaffOtp, verifyStaffPasswor
 import { findStaffByEmail, resetStaffPassword, signUpStaff } from "./staff.services.js";
 
 
-export const generateSignupOtpController = async(req, res) => {
+export const signUpStaffController = async(req, res) => {
     try {
 
         const {error, value} = signUpStaffSchema.validate(req.body);
@@ -124,7 +124,7 @@ export const loginStaffController = async (req, res) => {
 
         const staff = await findStaffByEmail(email);
 
-        if (staff.rows.length == 0) {
+        if (staff.rows.length === 0) {
             return res.status(404).json({
                 Error: "Account doesn't exist. Kindly create an account to login."
             });

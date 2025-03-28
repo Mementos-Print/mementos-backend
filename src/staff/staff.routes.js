@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { generateResetPasswordOtpController, generateSignupOtpController, loginStaffController, verifyResetPasswordOtpController, verifySignupOtpController } from "./staff.controllers.js";
+import { generateResetPasswordOtpController, loginStaffController,
+    signUpStaffController,
+    verifyResetPasswordOtpController, verifySignupOtpController } from "./staff.controllers.js";
 
 export const staffRouter = Router();
 
-staffRouter.post('/signup', generateSignupOtpController);
+staffRouter.post('/signUp', signUpStaffController);
+staffRouter.post('/verifySignUpOtp', verifySignupOtpController);
 staffRouter.post('/login', loginStaffController);
-staffRouter.post('/verifySignupOtp', verifySignupOtpController);
 staffRouter.post('/resetPassword', generateResetPasswordOtpController);
 staffRouter.post('/verifyPasswordOtp', verifyResetPasswordOtpController);
