@@ -1,5 +1,7 @@
 import sharp from 'sharp';
 import fs from 'fs/promises';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import { deleteImagesFromCloud, saveToCloud } from '../middleware/images.js';
 import { findRefreshTokenByStaff, findRefreshTokenByUser } from '../tokens/tokens.services.js';
 import { deleteImagesSchema } from '../validators/images.js';
@@ -7,8 +9,30 @@ import { deleteImages, getImagesById, getPendingImagesForAdmin, getUploadedImage
 
 
 const processImage = async (fileBuffer, style, borderColor) => {
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    // Define the uploads directory
+    const uploadsDir = path.join(__dirname, 'uploads');
+
+    async function ensureUploadsFolderExists() {
+        try {
+            await fs.mkdir(uploadsDir, { recursive: true }); // Creates folder if it doesn't exist
+            console.log("Uploads folder is ready.");
+        } catch (error) {
+            console.error("Error creating uploads folder:", error);
+        }
+    }
+
+    // Call function to ensure the folder exists
+    await ensureUploadsFolderExists();
+
+    // Generate a unique ID
     const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const outPath = `uploads/${uniqueId}_edited.png`;
+
+    // Construct the output file path
+    const outPath = path.join(uploadsDir, `${uniqueId}_edited.png`);
 
     let image = sharp(fileBuffer);
     const metadata = await image.metadata();
@@ -98,6 +122,7 @@ export const uploadImagesController = async (req, res) => {
 
         const { style, borderColor } = req.body;
         const files = req.files;
+        
         if (!files || files.length === 0) return res.status(400).json({ error: "No file uploaded" });
 
         // Process images in parallel
