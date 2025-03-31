@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",")
+
 export const config = {
     port: process.env.PORT,
     asecret: process.env.ACCESS_SECRET_KEY,
@@ -21,5 +23,5 @@ export const config = {
         pass: process.env.EMAIL_PASSWORD
     },
     dburl: process.env.DATABASE_URL,
-    origins: process.env.ALLOWED_ORIGINS.split(",")
+    origins: allowedOrigins
 };
