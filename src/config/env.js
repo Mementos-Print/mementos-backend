@@ -20,5 +20,6 @@ export const config = {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
     },
-    dburl: process.env.DATABASE_URL
+    dburl: process.env.DATABASE_URL,
+    origins: process.env.ALLOWED_ORIGINS.split(",")
 };

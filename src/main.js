@@ -1,4 +1,6 @@
 import express from 'express';
+import cors from 'cors';
+import { corsOptions } from './config/cors.js';
 import { config } from './config/env.js';
 import { tables } from './utils/tables.functions.js';
 import { userRouter } from './users/users.routes.js';
@@ -9,6 +11,7 @@ import { staffRouter } from './staff/staff.routes.js';
 
 const app = express();
 
+app.use(cors(corsOptions));
 app.use(express.json({limit: "50mb"}));
 
 app.use('/users', userRouter);
