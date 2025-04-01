@@ -1,5 +1,5 @@
 import { aToken, rToken } from "../tokens/jwt.js";
-import { alterOtp, alterStaffTokens, deleteOTP, findOtpByEmail, findRefreshTokenByStaff, saveOtp, saveStaffRefreshToken } from "../tokens/tokens.services.js";
+import { alterOtp, deleteOTP, findOtpByEmail, saveOtp } from "../tokens/tokens.services.js";
 import { comaparePassword, hashPassword } from "../utils/bcrypt.js";
 import { sendOtp } from "../utils/email.js";
 import { generateOtp } from "../utils/otp.js";
@@ -111,67 +111,45 @@ export const verifySignupOtpController = async (req, res) => {
 
 export const loginStaffController = async (req, res) => {
     try {
-
-        const {error, value} = loginStaffSchema.validate(req.body);
+        const { error, value } = loginStaffSchema.validate(req.body);
 
         if (error) {
-            return res.status(400).json({
-                Error: error.message
-            });
-        };
+            return res.status(400).json({ Error: error.message });
+        }
 
-        const {email, password} = value;
-
+        const { email } = value;
         const staff = await findStaffByEmail(email);
 
         if (staff.rows.length === 0) {
             return res.status(404).json({
-                Error: "Account doesn't exist. Kindly create an account to login."
+                Error: "User not found. Kindly create an account to login.",
             });
-        };
+        }
 
-        const staffDetails = staff.rows[0];
+        const staffId = staff.rows[0].staffid;
+        const staffName = staff.rows[0].name;
+        const staffRole = staff.rows[0].role;
 
-        const passwordMatch = await comaparePassword(password, staffDetails.password);
+        const accessToken = aToken({ id: staffId, name: staffName, role: staffRole });
 
-        if(!passwordMatch) {
-            return res.status(400).json({
-                Error: "Invalid credentials"
-            });
-        };
+        const refreshToken = rToken({ id: staffId, name: staffName, role: staffRole });
 
-        const loggedIn = await findRefreshTokenByStaff(staffDetails.staffid);
-
-        const accessToken = aToken({id: staffDetails.staffid, role: staffDetails.role});
-
-        const refreshToken = rToken({id: staffDetails.staffid, role: staffDetails.role});
-
-        const hashedToken = await hashPassword(refreshToken);
-
-        if (loggedIn.rows.length > 0) {
-            await alterStaffTokens(staffDetails.staffid, refreshToken);
-
-            return res.status(201).json({
-                Message: "Satff logged in successfully!",
-                accessToken, refreshToken
-            });
-        };
- 
-        await saveStaffRefreshToken(staffDetails.staffid, hashedToken);
+        // Set Refresh Token as HTTP-Only Cookie
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true, // Prevents JavaScript access
+            secure: true, // Ensures HTTPS-only (set false for local dev)
+            sameSite: "None", // Required for cross-origin requests
+            path: "/",
+            maxAge: 6 * 30 * 24 * 60 * 60 * 1000 // 6 months
+        });
 
         return res.status(201).json({
-            Message: "Satff logged in successfully!",
-            accessToken, refreshToken
+            Message: "Staff logged in successfully!",
+            accessToken // Only send the access token
         });
-        
     } catch (error) {
-
-        console.log("Error logging", error);
-        
-        return res.status(400).json({
-            Error: "Error logging in."
-        });
-        
+        console.log("Error logging in:", error);
+        return res.status(500).json({ Error: "Internal Server Error" });
     }
 };
 

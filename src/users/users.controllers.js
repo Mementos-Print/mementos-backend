@@ -1,5 +1,5 @@
 import { aToken, rToken } from "../tokens/jwt.js";
-import { alterOtp, alterUserTokens, deleteOTP, findOtpByEmail, findRefreshTokenByUser, saveOtp, saveUserRefreshToken } from "../tokens/tokens.services.js";
+import { alterOtp, deleteOTP, findOtpByEmail, saveOtp } from "../tokens/tokens.services.js";
 import { comaparePassword, hashPassword } from "../utils/bcrypt.js";
 import { sendOtp } from "../utils/email.js";
 import { generateOtp } from "../utils/otp.js";
@@ -109,58 +109,44 @@ export const validateUserOtpController = async (req, res) => {
 
 export const loginUserController = async (req, res) => {
     try {
-
-        const {error, value} = loginUserSchema.validate(req.body);
+        const { error, value } = loginUserSchema.validate(req.body);
 
         if (error) {
-            return res.status(400).json({
-                Error: error.message
-            });
-        };
+            return res.status(400).json({ Error: error.message });
+        }
 
-        const {email} = value;
-
+        const { email } = value;
         const user = await findUserByEmail(email);
-        
-        if(user.rows.length === 0) {
 
+        if (user.rows.length === 0) {
             return res.status(404).json({
-                Error: "User not found. Kindly create an account to login."
-            })
-
-        };
-
-        const loggedIn = await findRefreshTokenByUser(user.rows[0].userid);
-
-        const accessToken = aToken({id: user.rows[0].userid, name: user.rows[0].name, role: 'customer'});
-
-        const refreshToken = rToken({id: user.rows[0].userid, name: user.rows[0].name, role: 'customer'});
-
-        const hashedToken = await hashPassword(refreshToken);
-
-        if (loggedIn.rows.length > 0) {
-            await alterUserTokens(user.rows[0].userid, refreshToken);
-
-            return res.status(201).json({
-                Message: "User logged in successfully!",
-                accessToken, refreshToken
+                Error: "User not found. Kindly create an account to login.",
             });
-        };
+        }
 
-        await saveUserRefreshToken(user.rows[0].userid, hashedToken)
+        const userId = user.rows[0].userid;
+        const userName = user.rows[0].name;
+        const userRole = user.rows[0].role;
+
+        const accessToken = aToken({ id: userId, name: userName, role: userRole });
+
+        const refreshToken = rToken({ id: userId, name: userName, role: userRole });
+
+        // Set Refresh Token as HTTP-Only Cookie
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true, // Prevents JavaScript access
+            secure: true, // Ensures HTTPS-only (set false for local dev)
+            sameSite: "None", // Required for cross-origin requests
+            path: "/",
+            maxAge: 6 * 30 * 24 * 60 * 60 * 1000 // 6 months
+        });
 
         return res.status(201).json({
             Message: "User logged in successfully!",
-            accessToken, refreshToken
+            accessToken // Only send the access token
         });
-        
     } catch (error) {
-
-        console.log("Error logging", error);
-        
-        return res.status(400).json({
-            Error: "Error logging in."
-        });
-        
+        console.log("Error logging in:", error);
+        return res.status(500).json({ Error: "Internal Server Error" });
     }
 };

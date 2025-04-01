@@ -3,7 +3,6 @@ import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { deleteImagesFromCloud, saveToCloud } from '../middleware/images.js';
-import { findRefreshTokenByStaff, findRefreshTokenByUser } from '../tokens/tokens.services.js';
 import { deleteImagesSchema } from '../validators/images.js';
 import { deleteImages, getImagesById, getPendingImagesForAdmin, getUploadedImagesForAdmin, uploadImagesToDB } from './images.services.js';
 
@@ -171,14 +170,6 @@ export const getUploadedImagesController = async (req, res) => {
             })
         };
 
-        const loggedIn = await findRefreshTokenByStaff(loggedInUser.id);
-
-        if(loggedIn.rows.length == 0) {
-            return res.status(403).json({
-                Error: "This seession has expired. Kindly re-login to continue."
-            })
-        };
-
         const {filter} = req.body;
 
         if (filter == 'pending') {
@@ -224,14 +215,6 @@ export const deleteImagesController = async (req, res) => {
         if(!user) {
             return res.status(401).json({
                 Error: "Unauthorized"
-            })
-        };
-
-        const loggedIn = await findRefreshTokenByStaff(user.id);
-
-        if(loggedIn.rows.length === 0) {
-            return res.status(403).json({
-                Error: "This session has expired. Kindly re-login"
             })
         };
 

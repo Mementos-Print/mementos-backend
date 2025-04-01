@@ -1,178 +1,128 @@
-import { refreshTokenSchema } from "../validators/tokens.js";
 import jwt from 'jsonwebtoken';
-import { findRefreshTokenByStaff, findRefreshTokenByUser, logoutStaff, logoutUser } from "./tokens.services.js";
 import { config } from "../config/env.js";
 import { aToken } from "./jwt.js";
 
 
-export const refershStaffTokenController = async(req, res) => {
+export const refreshStaffTokenController = async (req, res) => {
     try {
+        
+        const refreshToken = req.cookies.refreshToken;
+        
+        if (!refreshToken) {
+            return res.status(401).json({ Error: "No refresh token provided" });
+        }
 
-        const {error, value} = refreshTokenSchema.validate(req.body);
-
-        if (error) {
-            return res.status(400).json({
-                Error: error.message
-            });
-        };
-
-        const {refreshToken} = value;
-
-        const decodedToken = jwt.decode(refreshToken); 
-
-        const tokenExists = await findRefreshTokenByStaff(decodedToken.id);
-
-        if ( tokenExists.rows.length == 0) {
-            return res.status(404).json({
-                Error: "This session has expired. Kindly re-login"
-            });
-        };
+        const decodedToken = jwt.decode(refreshToken);
+        if (!decodedToken) {
+            return res.status(403).json({ Error: "Invalid refresh token" });
+        }
 
         jwt.verify(refreshToken, config.rsecret, (error, user) => {
-
             if (error) {
-                return res.status(403).json({
-                    Error: "This session has expired. Kindly re-login"
-                });
-            };
-            
-            const newAccessToken = aToken({id: user.id, role: user.role});
+                return res.status(403).json({ Error: "Session expired. Please re-login" });
+            }
+
+            const newAccessToken = aToken({ id: user.id, role: user.role });
 
             return res.status(200).json({
-                AccessToken: newAccessToken
+                accessToken: newAccessToken
             });
-
         });
-        
+
     } catch (error) {
-
-        console.error("Error refreshing staff token", error);
-
-        return res.status(400).json({
-            Error: "Error refreshing staff token"
-        });
+        console.error("Error refreshing token:", error);
+        return res.status(500).json({ Error: "Internal Server Error" });
     }
 };
 
-export const refershUserTokenController = async(req, res) => {
+export const refreshUserTokenController = async (req, res) => {
     try {
+        
+        const refreshToken = req.cookies.refreshToken;
+        
+        if (!refreshToken) {
+            return res.status(401).json({ Error: "No refresh token provided" });
+        }
 
-        const {error, value} = refreshTokenSchema.validate(req.body);
-
-        if (error) {
-            return res.status(400).json({
-                Error: error.message
-            });
-        };
-
-        const {refreshToken} = value;
-
-        const decodedToken = jwt.decode(refreshToken); 
-
-        const tokenExists = await findRefreshTokenByUser(decodedToken.id);
-
-        if (tokenExists.rows.length == 0) {
-            return res.status(404).json({
-                Error: "This session has expired. Kindly re-login"
-            });
-        };
+        const decodedToken = jwt.decode(refreshToken);
+        if (!decodedToken) {
+            return res.status(403).json({ Error: "Invalid refresh token" });
+        }
 
         jwt.verify(refreshToken, config.rsecret, (error, user) => {
-
             if (error) {
-                return res.status(403).json({
-                    Error: "This session has expired. Kindly re-login"
-                });
-            };
-            
-            const newAccessToken = aToken({id: user.id, role: user.role});
+                return res.status(403).json({ Error: "Session expired. Please re-login" });
+            }
+
+            const newAccessToken = aToken({ id: user.id, role: user.role });
 
             return res.status(200).json({
-                AccessToken: newAccessToken
+                accessToken: newAccessToken
             });
-
         });
-        
+
     } catch (error) {
-
-        console.error("Error refreshing token", error);
-
-        return res.status(400).json({
-            Error: "Error refreshing token"
-        });
+        console.error("Error refreshing token:", error);
+        return res.status(500).json({ Error: "Internal Server Error" });
     }
 };
 
 export const logoutStaffController = async (req, res) => {
     try {
-
         const loggedInStaff = req.user;
 
-        if(!loggedInStaff) {
+        if (!loggedInStaff) {
             return res.status(401).json({
                 Error: "Unauthorized"
-            })
-        };
+            });
+        }
 
-        const loggedIn = await findRefreshTokenByStaff(loggedInStaff.id);
-
-        if(loggedIn.rows.length == 0) {
-            return res.status(403).json({
-                Error: "This session has expired. Kindly re-login to continue."
-            })
-        };
-
-
-        await logoutStaff(loggedInStaff.id);
+        // Clear the refresh token cookie
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: true, // Only send over HTTPS in production
+            sameSite: "None" // Adjust if frontend is on a different domain
+        });
 
         return res.status(200).json({
-            Message: "User logged out successfully"
+            Message: "Staff logged out successfully"
         });
-        
+
     } catch (error) {
+        console.error("Error logging out staff", error);
 
-        console.error("Error logging out user", error);
-        
         return res.status(400).json({
-            Error: "Error logging out user"
+            Error: "Error logging out staff"
         });
-
     }
 };
 
 export const logoutUserController = async (req, res) => {
     try {
+        const loggedInStaff = req.user;
 
-        const loggedInUser = req.user;
-
-        if(!loggedInUser) {
+        if (!loggedInStaff) {
             return res.status(401).json({
                 Error: "Unauthorized"
-            })
-        };
+            });
+        }
 
-        const loggedIn = await findRefreshTokenByUser(loggedInUser.id);
-
-        if(loggedIn.rows.length == 0) {
-            return res.status(403).json({
-                Error: "This session has expired. Kindly re-login to continue."
-            })
-        };
-
-
-        await logoutUser(loggedInUser.id);
+        // Clear the refresh token cookie
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: true, // Only send over HTTPS in production
+            sameSite: "None" // Adjust if frontend is on a different domain
+        });
 
         return res.status(200).json({
             Message: "User logged out successfully"
         });
-        
-    } catch (error) {
 
+    } catch (error) {
         console.error("Error logging out user", error);
-        
+
         return res.status(400).json({
             Error: "Error logging out user"
         });
-
     }
 };

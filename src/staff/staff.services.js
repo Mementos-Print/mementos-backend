@@ -13,7 +13,7 @@ export const signUpStaff = async(staffID, email, name, password) => {
         await executeQuery(query, values);
         
     } catch (error) {
-        console.error("Error inserting into users table", error);
+        console.error("Error inserting into staff table", error);
     }
 
 };
@@ -32,7 +32,7 @@ export const findStaffByEmail = async(email) => {
         return results;
         
     } catch (error) {
-        console.error("Error finding user", error);
+        console.error("Error finding staff", error);
     }
 };
 
