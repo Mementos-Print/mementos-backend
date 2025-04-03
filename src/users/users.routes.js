@@ -5,4 +5,4 @@ export const userRouter = Router();
 
 userRouter.post('/signUp', signUpUserController);
 userRouter.post('/verifySignUpOtp', validateUserOtpController);
-userRouter.get('/loginUser', loginUserController);
+userRouter.post('/loginUser', loginUserController);
