@@ -1,125 +1,17 @@
-import sharp from 'sharp';
-import fs from 'fs/promises';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import { deleteImagesFromCloud, saveToCloud } from '../middleware/images.js';
-import { deleteImagesSchema } from '../validators/images.js';
-import { deleteImages, getImagesById, getPendingImagesForAdmin, getUploadedImagesForAdmin, uploadImagesToDB } from './images.services.js';
+import { saveToCloud } from "../middleware/images.js";
+import fs from "fs/promises";
+import { uploadImagesToDB } from "./images.services.js";
+import { processImage } from "./images.services.js";
+import { combinePolaroids } from "./images.services.js";
 
 
-const processImage = async (fileBuffer, style, borderColor) => {
-
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-
-    // Define the uploads directory
-    const uploadsDir = path.join(__dirname, 'uploads');
-
-    async function ensureUploadsFolderExists() {
-        try {
-            await fs.mkdir(uploadsDir, { recursive: true }); // Creates folder if it doesn't exist
-            console.log("Uploads folder is ready.");
-        } catch (error) {
-            console.error("Error creating uploads folder:", error);
-        }
-    }
-
-    // Call function to ensure the folder exists
-    await ensureUploadsFolderExists();
-
-    // Generate a unique ID
-    const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-
-    // Construct the output file path
-    const outPath = path.join(uploadsDir, `${uniqueId}_edited.png`);
-
-    let image = sharp(fileBuffer);
-    const metadata = await image.metadata();
-    const { width, height } = metadata;
-
-    let finalWidth, finalHeight, borderSize, leftBorder, bottomBorder;
-
-    if (style === 'blank' && width > height) {
-        finalWidth = 1100;
-        finalHeight = 1700;
-        borderSize = 50;
-
-        image = image.rotate(90)
-        .resize({
-            width: finalWidth,
-            height: finalHeight,
-            fit: 'fill'
-        }).extend({
-            top: borderSize,
-            bottom: borderSize,
-            left: borderSize,
-            right: borderSize,
-            background: borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 }
-        });
-        
-    } else if(style === 'blank' && width < height) {
-        finalWidth = 1100;
-        finalHeight = 1700;
-        borderSize = 50;
-
-        image = image.resize({
-            width: finalWidth,
-            height: finalHeight,
-            fit: 'fill'
-        }).extend({
-            top: borderSize,
-            bottom: borderSize,
-            left: borderSize,
-            right: borderSize,
-            background: borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 }
-        })
-    } else if(style === 'polaroid' && width > height) {
-        finalWidth = 705;
-        finalHeight = 1100;
-        borderSize = 50;
-        leftBorder = 145;
-
-        image = image.rotate(90)
-        .resize({
-            width: finalWidth,
-            height: finalHeight,
-            fit: 'fill'
-        }).extend({
-            top: borderSize,
-            bottom: borderSize,
-            left: leftBorder,
-            right: borderSize,
-            background: borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 }
-        })
-    } else {
-        finalWidth = 800;
-        finalHeight = 1005;
-        borderSize = 50;
-        bottomBorder = 145;
-
-        image = image.resize({
-            width: finalWidth,
-            height: finalHeight,
-            fit: 'fill'
-        }).extend({
-            top: borderSize,
-            bottom: bottomBorder,
-            left: borderSize,
-            right: borderSize,
-            background: borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 }
-        })
-    };
-
-    await image.toFile(outPath);
-    return outPath;
-};
-
-export const uploadImagesController = async (req, res) => {
+export const uploadBlankImagesController = async (req, res) => {
     try {
         const loggedInUser = req.user;
         if (!loggedInUser) return res.status(401).json({ Error: "Unauthorized" });
 
-        const { style, borderColor } = req.body;
+        const style = 'blank';
+        const { borderColor } = req.body;
         const files = req.files;
         
         if (!files || files.length === 0) return res.status(400).json({ error: "No file uploaded" });
@@ -156,6 +48,68 @@ export const uploadImagesController = async (req, res) => {
     } catch (error) {
         console.error("Error uploading images", error);
         return res.status(400).json({ Error: "Error uploading Images" });
+    }
+};
+
+
+export const uploadPolaroidsController = async (req, res) => {
+    try {
+        const loggedInUser = req.user;
+        if (!loggedInUser) return res.status(401).json({ Error: "Unauthorized" });
+
+        const style = 'polaroid';
+        const { borderColor } = req.body;
+        const files = req.files;
+
+        if (!files || files.length === 0)
+            return res.status(400).json({ error: "No file uploaded" });
+        if (files.length % 2 !== 0)
+            return res.status(400).json({ error: "Please upload an even number of images" });
+
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+        if (files.some((file) => file.size > MAX_FILE_SIZE)) {
+            return res.status(400).json({ error: "One or more files exceed 5MB limit" });
+        }
+
+        const processedImages = await Promise.all(
+            files.map(async (file) => {
+                const outPath = await processImage(file.buffer, style, borderColor);
+                return outPath;
+            })
+        );
+
+        const combinedImages = await combinePolaroids(processedImages);
+
+        const uploadedImages = await Promise.all(
+            combinedImages.map(async (imagePath) => {
+                try {
+                    const uploadResults = await saveToCloud(imagePath);
+                    if (!uploadResults || !Array.isArray(uploadResults) || uploadResults.length === 0) {
+                        throw new Error(`Invalid Cloudinary upload result for ${imagePath}`);
+                    }
+                    const { public_id, secure_url } = uploadResults[0]; // Take first result
+                    return { public_id, secure_url, imagePath };
+                } catch (error) {
+                    console.error(`Failed to upload ${imagePath}:`, error);
+                    throw error;
+                }
+            })
+        );
+
+        await uploadImagesToDB(uploadedImages, loggedInUser.id, style);
+
+        res.status(201).json({ photos: uploadedImages });
+
+        await Promise.all(
+            [...processedImages, ...combinedImages].map((outPath) =>
+                fs.unlink(outPath).catch((err) =>
+                    console.warn(`Failed to delete ${outPath}: ${err.message}`)
+                )
+            )
+        );
+    } catch (error) {
+        console.error("Error uploading images:", error);
+        return res.status(400).json({ Error: error.message || "Error uploading images" });
     }
 };
 

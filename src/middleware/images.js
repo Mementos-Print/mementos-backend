@@ -13,15 +13,6 @@ const upload = multer({ storage });
 
 export const uploadImages = upload.array("images");
 
-// export const saveToCloud = async (path) => {
-//     try {
-//         const result = await cloudinary.uploader.upload(path, { folder: 'uploads' });
-//         return result;
-//     } catch (error) {
-//         console.error("Cloudinary Upload Error:", error);
-//     }
-// };
-
 export const saveToCloud = async (paths) => {
     try {
         const imagePaths = Array.isArray(paths) ? paths : [paths];
@@ -34,7 +25,7 @@ export const saveToCloud = async (paths) => {
         return results;
     } catch (error) {
         console.error("Cloudinary Upload Error:", error);
-        return []; // Return an empty array in case of an error
+        throw new Error(`Failed to upload to Cloudinary: ${error.message}`);
     }
 };
 

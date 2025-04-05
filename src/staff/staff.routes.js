@@ -1,12 +1,15 @@
 import { Router } from "express";
 import { generateResetPasswordOtpController, loginStaffController,
     signUpStaffController,
-    verifyResetPasswordOtpController, verifySignupOtpController } from "./staff.controllers.js";
+    updateStaffRoleController,
+    verifyResetPasswordOtpController 
+} from "./staff.controllers.js";
+import { adminAuth, auth } from "../middleware/auth.js";
 
 export const staffRouter = Router();
 
 staffRouter.post('/signUp', signUpStaffController);
-staffRouter.post('/verifySignUpOtp', verifySignupOtpController);
 staffRouter.post('/login', loginStaffController);
-staffRouter.post('/resetPassword', generateResetPasswordOtpController);
-staffRouter.post('/verifyPasswordOtp', verifyResetPasswordOtpController);
+staffRouter.put('/resetPassword', generateResetPasswordOtpController);
+staffRouter.put('/verifyPasswordOtp', verifyResetPasswordOtpController);
+staffRouter.put('/updateRole',auth, adminAuth, updateStaffRoleController);
