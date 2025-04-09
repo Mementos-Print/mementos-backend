@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",")
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",").map(origin => origin.trim());
 
 export const config = {
     port: process.env.PORT,
