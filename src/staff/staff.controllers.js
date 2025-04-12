@@ -1,3 +1,4 @@
+import { config } from "../config/env.js";
 import { aToken, rToken } from "../tokens/jwt.js";
 import { comaparePassword, hashPassword } from "../utils/bcrypt.js";
 import { sendOtp } from "../utils/email.js";
@@ -83,8 +84,8 @@ export const loginStaffController = async (req, res) => {
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true, // Prevents JavaScript access
-            secure: true, // Ensures HTTPS-only (set false for local dev)
-            sameSite: "None", // Required for cross-origin requests
+            secure: config.nodeEnv, // Ensures HTTPS-only (set false for local dev)
+            sameSite: config.nodeEnv ? "None" : "Lax", // Required for cross-origin requests
             path: "/",
             maxAge: 6 * 30 * 24 * 60 * 60 * 1000 // 6 months
         });
