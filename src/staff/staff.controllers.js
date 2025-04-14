@@ -82,13 +82,25 @@ export const loginStaffController = async (req, res) => {
 
         const refreshToken = rToken({ id: staffId, name: staffName, role: staffRole });
 
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true, // Prevents JavaScript access
-            secure: config.nodeEnv === "production", // Ensures HTTPS-only (set false for local dev)
-            sameSite: config.nodeEnv === "production" ? "None" : "Lax", // Required for cross-origin requests
+        // res.cookie("refreshToken", refreshToken, {
+        //     httpOnly: true, // Prevents JavaScript access
+        //     secure: config.nodeEnv === "production", // Ensures HTTPS-only (set false for local dev)
+        //     sameSite: config.nodeEnv === "production" ? "None" : "Lax", // Required for cross-origin requests
+        //     path: "/",
+        //     maxAge: 6 * 30 * 24 * 60 * 60 * 1000, // 6 months
+        // });
+
+        const cookieOptions = {
+            httpOnly: true,
+            secure: config.nodeEnv === "production",
+            sameSite: config.nodeEnv === "production" ? "None" : "Lax",
             path: "/",
-            maxAge: 6 * 30 * 24 * 60 * 60 * 1000 // 6 months
-        });
+            maxAge: 6 * 30 * 24 * 60 * 60 * 1000
+        };
+        
+        console.log("Cookie options:", cookieOptions);
+        
+        res.cookie("refreshToken", refreshToken, cookieOptions);        
 
         return res.status(201).json({
             Message: "Staff logged in successfully!",
