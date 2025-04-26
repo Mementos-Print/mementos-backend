@@ -1,6 +1,6 @@
 import { saveToCloud } from "../middleware/images.js";
 import fs from "fs/promises";
-import { uploadImagesToDB } from "./images.services.js";
+import { uploadImagesToDB, getPendingImagesForAdmin, getUploadedImagesForAdmin } from "./images.services.js";
 import { processImage } from "./images.services.js";
 import { combinePolaroids } from "./images.services.js";
 
