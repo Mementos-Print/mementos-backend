@@ -151,7 +151,7 @@ export const getUploadedImagesController = async (req, res) => {
 
     } catch (error) {
 
-        console.error("Error");
+        console.error("Error", error);
         
         return res.status(400).json({
             Error: "Error fetching uploaded images"
