@@ -7,7 +7,7 @@ export const passposrtConfig = passport.use(new Strategy({
 
     clientID: config.googleClientID,
     clientSecret: config.googleCliendSecret,
-    callbackURL: '/auth/google/callback'
+    callbackURL: config.callBackUR
 
 }, async (accessToken, refreshToken, profile, done) => {
     try {
