@@ -44,7 +44,7 @@ export const findUserByEmailOrID = async(email, ID) => {
     try {
 
         const query = `
-        SELECT * FROM users WHERE email = $1, OR userID= $2;
+        SELECT * FROM users WHERE email = $1 OR userID= $2;
         `;
 
         const values = [email, ID];
