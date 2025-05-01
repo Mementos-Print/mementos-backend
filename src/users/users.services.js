@@ -6,12 +6,15 @@ export const signUpUser = async(userID, email, name) => {
 
         const query = `
         INSERT INTO users(userID, email, name)
-        VALUES($1,$2,$3);
+        VALUES($1,$2,$3)
+        RETURNING *;
         `;
 
         const values = [userID, email, name];
 
-        await executeQuery(query, values);
+        const result = await executeQuery(query, values);
+
+        return result;
         
     } catch (error) {
         console.error("Error inserting into users table", error);
@@ -33,6 +36,24 @@ export const findUserByEmail = async(email) => {
         return results;
         
     } catch (error) {
-        console.error("Error finding user", error);
+        console.error("Error finding user by email", error);
+    }
+};
+
+export const findUserByID = async(ID) => {
+    try {
+
+        const query = `
+        SELECT * FROM users WHERE userID = $1;
+        `;
+
+        const values = [ID];
+
+        const results = await executeQuery(query, values);
+
+        return results;
+        
+    } catch (error) {
+        console.error("Error finding user by ID", error);
     }
 };

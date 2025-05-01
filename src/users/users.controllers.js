@@ -1,4 +1,5 @@
 import { config } from "../config/env.js";
+import { passposrtConfig } from "../config/passport.js";
 import { aToken, rToken } from "../tokens/jwt.js";
 import { uniqueID } from "../utils/uuid.js";
 import { loginUserSchema } from "../validators/users.js";
@@ -44,8 +45,6 @@ export const loginUserController = async (req, res) => {
             maxAge: 6 * 30 * 24 * 60 * 60 * 1000
         };
         
-        console.log("Cookie options:", cookieOptions);
-        
         res.cookie("refreshToken", refreshToken, cookieOptions);        
 
         return res.status(user.rows.length === 0 ? 201 : 200).json({
@@ -57,4 +56,30 @@ export const loginUserController = async (req, res) => {
         console.log("Error logging in:", error);
         return res.status(500).json({ Error: "Internal Server Error" });
     }
+};
+
+export const loginUserWithGoogleController = passposrtConfig.authenticate('google', {scope: ['profile', 'email']});
+
+export const loginUserWithGoogleCallback = passposrtConfig.authenticate('google', {session: false, failureRedirect: '/login'});
+
+export const loginUserWithGoogleCallbackController = (req, res) => {
+
+    const accessToken = aToken({id: req.user.userid, name: req.user.name, role: req.user.role});
+    const refreshToken = aToken({id: req.user.userid, name: req.user.name, role: req.user.role});
+
+    const cookieOptions = {
+        httpOnly: true,
+        secure: config.nodeEnv === "production",
+        sameSite: config.nodeEnv === "production" ? "None" : "Lax",
+        path: "/",
+        maxAge: 6 * 30 * 24 * 60 * 60 * 1000
+    };
+    
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    return res.status(200).json({
+        Message: "User logged in successfully!",
+        accessToken
+    });
+
 };

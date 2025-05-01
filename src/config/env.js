@@ -24,5 +24,7 @@ export const config = {
     },
     dburl: process.env.DATABASE_URL,
     origins: allowedOrigins,
-    nodeEnv: process.env.NODE_ENV
+    nodeEnv: process.env.NODE_ENV,
+    googleClientID: process.env.CLIENT_ID,
+    googleCliendSecret: process.env.CLIENT_SECRET
 };
