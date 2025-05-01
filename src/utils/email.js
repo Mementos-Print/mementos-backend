@@ -4,7 +4,7 @@ import { config } from '../config/env.js';
 export const sendOtp = async(email, otp) =>  {
 
     const mailOptions = {
-        from: 'youremail@gmail.com',
+        from: config.email.user,
         to: email,
         subject: 'Otp verification',
         text: `Your one time password is:${otp}`
