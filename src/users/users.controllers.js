@@ -1,24 +1,25 @@
 import { config } from "../config/env.js";
 import { passposrtConfig } from "../config/passport.js";
 import { aToken, rToken } from "../tokens/jwt.js";
-import { uniqueID } from "../utils/uuid.js";
+import { generateAlphanumericId } from "../utils/uuid.js";
 import { loginUserSchema } from "../validators/users.js";
 import { findUserByEmail, signUpUser } from "./users.services.js";
 
 
 export const loginUserController = async (req, res) => {
     try {
+        
         const { error, value } = loginUserSchema.validate(req.body);
 
         if (error) {
             return res.status(400).json({ Error: error.message });
         }
-
         const { email, name } = value;
         let user = await findUserByEmail(email);
+        const ID = await generateAlphanumericId();
 
         if (user.rows.length === 0) {
-            await signUpUser(uniqueID, email, name);
+            await signUpUser(ID, email, name);
             user = await findUserByEmail(email);
         }
 

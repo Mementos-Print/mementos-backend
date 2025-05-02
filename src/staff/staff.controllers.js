@@ -3,7 +3,7 @@ import { aToken, rToken } from "../tokens/jwt.js";
 import { comaparePassword, hashPassword } from "../utils/bcrypt.js";
 import { sendOtp } from "../utils/email.js";
 import { generateOtp } from "../utils/otp.js";
-import { uniqueID } from "../utils/uuid.js";
+import { generateAlphanumericId } from "../utils/uuid.js";
 import { forgotPasswordSchema, loginStaffSchema, signUpStaffSchema, updateStaffRoleSchema, verifyStaffPasswordOtpSchema } from "../validators/staff.js";
 import { findStaffByEmail, resetStaffPassword, signUpStaff, updateStaffRole } from "./staff.services.js";
 
@@ -30,8 +30,9 @@ export const signUpStaffController = async(req, res) => {
         };
 
         const hashedPassword = await hashPassword(password);
+        const ID = await generateAlphanumericId();
 
-        await signUpStaff(uniqueID, email, name, hashedPassword);
+        await signUpStaff(ID, email, name, hashedPassword);
 
         return res.status(201).json({
             Message: "Account created successfully."
