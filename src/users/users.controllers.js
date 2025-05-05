@@ -65,7 +65,8 @@ export const loginUserWithGoogleCallback = passposrtConfig.authenticate('google'
 
 export const loginUserWithGoogleCallbackController = (req, res) => {
 
-    const accessToken = aToken({id: req.user.userid, name: req.user.name, role: req.user.role});
+    try {
+        const accessToken = aToken({id: req.user.userid, name: req.user.name, role: req.user.role});
     const refreshToken = aToken({id: req.user.userid, name: req.user.name, role: req.user.role});
 
     const cookieOptions = {
@@ -82,5 +83,9 @@ export const loginUserWithGoogleCallbackController = (req, res) => {
         Message: "User logged in successfully!",
         accessToken
     });
+    } catch (error) {
+        console.log("Error logging in user with google", error);
+        return res.status(500).json({Message: "Error logging in user with google"});
+    }
 
 };
