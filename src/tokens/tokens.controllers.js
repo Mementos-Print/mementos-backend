@@ -7,7 +7,6 @@ export const refreshStaffTokenController = async (req, res) => {
     try {
         
         const refreshToken = req.cookies.refreshToken;
-        console.log(refreshToken)
         if (!refreshToken) {
             return res.status(401).json({ Error: "No refresh token provided" });
         }
@@ -39,7 +38,6 @@ export const refreshUserTokenController = async (req, res) => {
     try {
         
         const refreshToken = req.cookies.refreshToken;
-        console.log({refreshToken})
         if (!refreshToken) {
             return res.status(401).json({ Error: "No refresh token provided" });
         }
