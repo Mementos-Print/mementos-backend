@@ -1,10 +1,43 @@
 import { config } from "../config/env.js";
-import { passposrtConfig } from "../config/passport.js";
+import { userPassposrtConfig } from "../config/passport.js";
 import { aToken, rToken } from "../tokens/jwt.js";
+import { comaparePassword, hashPassword } from "../utils/bcrypt.js";
 import { generateAlphanumericId } from "../utils/uuid.js";
-import { loginUserSchema } from "../validators/users.js";
+import { loginUserSchema, signUpUserSchema } from "../validators/users.js";
 import { findUserByEmail, signUpUser } from "./users.services.js";
 
+
+export const signUpUserController = async (req, res) => {
+    try {
+
+       const {error, value} = signUpUserSchema.validate(req.body);
+
+       if(error) return res.status(400).json({Error: error.message});
+
+       const {email, name, password} = value;
+
+       let user = await findUserByEmail(email);
+
+       if (user.rows.length > 0) return res.status(400).json({Error: "User exists already."});
+
+       const hashedPassword = await hashPassword(password);
+
+       const ID = await generateAlphanumericId("users", "userID");
+
+       await signUpUser(ID, email, name, hashedPassword);      
+
+        return res.status(201).json({
+            Message: "Account created successfully!"
+        });
+        
+    } catch (error) {
+
+        console.error("Error signingUpUser", error);
+
+        return res.status(500).json({error: "Internal server error; signing up user."})
+        
+    }
+};
 
 export const loginUserController = async (req, res) => {
     try {
@@ -14,14 +47,14 @@ export const loginUserController = async (req, res) => {
         if (error) {
             return res.status(400).json({ Error: error.message });
         }
-        const { email, name } = value;
-        let user = await findUserByEmail(email);
-        const ID = await generateAlphanumericId();
+        const { email, password } = value;
+        const user = await findUserByEmail(email);
 
-        if (user.rows.length === 0) {
-            await signUpUser(ID, email, name);
-            user = await findUserByEmail(email);
-        }
+        if (user.rows.length === 0) return res.status(404).json({Error: "User not found. Kindly create an account to login."});
+
+        const isMatch = await comaparePassword(password, user.rows[0].password);
+
+        if(!isMatch) return res.status(401).json({Error: "Invalid credentials."});
 
         const userId = user.rows[0].userid;
         const userName = user.rows[0].name;
@@ -59,9 +92,9 @@ export const loginUserController = async (req, res) => {
     }
 };
 
-export const loginUserWithGoogleController = passposrtConfig.authenticate('google', {scope: ['profile', 'email']});
+export const loginUserWithGoogleController = userPassposrtConfig.authenticate('google', {scope: ['profile', 'email']});
 
-export const loginUserWithGoogleCallback = passposrtConfig.authenticate('google', {session: false, failureRedirect: '/login'});
+export const loginUserWithGoogleCallback = userPassposrtConfig.authenticate('google', {session: false, failureRedirect: '/login'});
 
 export const loginUserWithGoogleCallbackController = (req, res) => {
 

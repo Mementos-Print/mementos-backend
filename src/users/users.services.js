@@ -1,20 +1,17 @@
 import { executeQuery } from "../config/database.js";
 
 
-export const signUpUser = async(userID, email, name) => {
+export const signUpUser = async(userID, email, name, password) => {
     try {
 
         const query = `
-        INSERT INTO users(userID, email, name)
-        VALUES($1,$2,$3)
-        RETURNING *;
+        INSERT INTO users(userID, email, name, password)
+        VALUES($1,$2,$3, $4);
         `;
 
-        const values = [userID, email, name];
+        const values = [userID, email, name, password];
 
-        const result = await executeQuery(query, values);
-
-        return result;
+        await executeQuery(query, values);
         
     } catch (error) {
         console.error("Error inserting into users table", error);
@@ -40,11 +37,11 @@ export const findUserByEmail = async(email) => {
     }
 };
 
-export const findUserByEmailOrID = async(email, ID) => {
+export const findUserOrStaffByEmailOrID = async(tableName, staffOrUserID, email, ID) => {
     try {
 
         const query = `
-        SELECT * FROM users WHERE email = $1 OR userID= $2;
+        SELECT * FROM ${tableName} WHERE email = $1 OR ${staffOrUserID}= $2;
         `;
 
         const values = [email, ID];

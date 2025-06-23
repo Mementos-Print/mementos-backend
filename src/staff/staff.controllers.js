@@ -30,7 +30,7 @@ export const signUpStaffController = async(req, res) => {
         };
 
         const hashedPassword = await hashPassword(password);
-        const ID = await generateAlphanumericId();
+        const ID = await generateAlphanumericId("staff", "staffID");
 
         await signUpStaff(ID, email, name, hashedPassword);
 

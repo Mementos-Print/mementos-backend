@@ -1,19 +1,19 @@
 import { executeQuery } from "../config/database.js";
 
-export const signUpStaff = async(userID, email, name, password) => {
+export const signUpStaff = async(staffID, email, name, password) => {
     try {
 
         const query = `
-        INSERT INTO users(userID, email, name, password)
+        INSERT INTO staff(staffID, email, name, password)
         VALUES($1,$2,$3,$4);
         `;
 
-        const values = [userID, email, name, password];
+        const values = [staffID, email, name, password];
 
         await executeQuery(query, values);
         
     } catch (error) {
-        console.error("Error inserting into users table", error);
+        console.error("Error inserting into staff table", error);
     }
 
 };
@@ -22,7 +22,7 @@ export const findStaffByEmail = async(email) => {
     try {
 
         const query = `
-        SELECT * FROM users WHERE email = $1;
+        SELECT * FROM staff WHERE email = $1;
         `;
 
         const values = [email];
