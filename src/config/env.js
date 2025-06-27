@@ -26,6 +26,7 @@ export const config = {
     origins: allowedOrigins,
     nodeEnv: process.env.NODE_ENV,
     googleClientID: process.env.CLIENT_ID,
-    googleCliendSecret: process.env.CLIENT_SECRET,
-    callBackUR: process.env.CALLBACK_URL
+    googleClientSecret: process.env.CLIENT_SECRET,
+    userCallBackURI: process.env.CALLBACK_URI_USER,
+    staffCallbackURI: process.env.CALLBACK_URI_STAFF
 };

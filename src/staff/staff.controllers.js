@@ -1,10 +1,13 @@
+import passport from "passport";
 import { config } from "../config/env.js";
 import { aToken, rToken } from "../tokens/jwt.js";
 import { comaparePassword, hashPassword } from "../utils/bcrypt.js";
 import { sendOtp } from "../utils/email.js";
 import { generateOtp } from "../utils/otp.js";
 import { generateAlphanumericId } from "../utils/uuid.js";
-import { forgotPasswordSchema, loginStaffSchema, signUpStaffSchema, updateStaffRoleSchema, verifyStaffPasswordOtpSchema } from "../validators/staff.js";
+import { forgotPasswordSchema, loginStaffSchema, 
+    signUpStaffSchema, updateStaffRoleSchema, verifyStaffPasswordOtpSchema 
+       } from "../validators/staff.js";
 import { findStaffByEmail, resetStaffPassword, signUpStaff, updateStaffRole } from "./staff.services.js";
 
 
@@ -243,4 +246,35 @@ export const updateStaffRoleController = async (req, res) => {
         });
         
     }
-}
+};
+
+export const loginStaffWithGoogleController = passport.authenticate('google-staff', {scope: ['profile', 'email'], session: false});
+
+export const loginStaffWithGoogleCallback = passport.authenticate('google-staff', {session: false, failureRedirect: '/login'});
+
+export const loginStaffWithGoogleCallbackController = (req, res) => {
+
+    try {
+        const accessToken = aToken({id: req.user.userid, name: req.user.name, role: req.user.role});
+        const refreshToken = aToken({id: req.user.userid, name: req.user.name, role: req.user.role});
+
+    const cookieOptions = {
+        httpOnly: true,
+        secure: config.nodeEnv === "production",
+        sameSite: config.nodeEnv === "production" ? "None" : "Lax",
+        path: "/",
+        maxAge: 6 * 30 * 24 * 60 * 60 * 1000
+    };
+    
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    return res.status(200).json({
+        Message: "Staff logged in successfully!",
+        accessToken
+    });
+    } catch (error) {
+        console.log("Error logging in staff with google", error);
+        return res.status(500).json({Message: "Error logging in staff with google"});
+    }
+
+};

@@ -4,11 +4,11 @@ import { config } from "./env.js";
 import { findUserOrStaffByEmailOrID, signUpUser } from "../users/users.services.js";
 import { signUpStaff } from "../staff/staff.services.js";
 
-export const userPassposrtConfig = passport.use(new Strategy({
+passport.use('google-user',new Strategy({
 
     clientID: config.googleClientID,
-    clientSecret: config.googleCliendSecret,
-    callbackURL: config.callBackUR
+    clientSecret: config.googleClientSecret,
+    callbackURL: config.userCallBackURI
 
 }, async (accessToken, refreshToken, profile, done) => {
     try {
@@ -32,11 +32,11 @@ export const userPassposrtConfig = passport.use(new Strategy({
     }
 }));
 
-export const staffPassposrtConfig = passport.use(new Strategy({
+passport.use('google-staff',new Strategy({
 
     clientID: config.googleClientID,
-    clientSecret: config.googleCliendSecret,
-    callbackURL: config.callBackUR
+    clientSecret: config.googleClientSecret,
+    callbackURL: config.staffCallbackURI
 
 }, async (accessToken, refreshToken, profile, done) => {
     try {

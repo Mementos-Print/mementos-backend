@@ -1,5 +1,5 @@
+import passport from "passport";
 import { config } from "../config/env.js";
-import { userPassposrtConfig } from "../config/passport.js";
 import { aToken, rToken } from "../tokens/jwt.js";
 import { comaparePassword, hashPassword } from "../utils/bcrypt.js";
 import { generateAlphanumericId } from "../utils/uuid.js";
@@ -63,14 +63,6 @@ export const loginUserController = async (req, res) => {
         const accessToken = aToken({ id: userId, name: userName, role: userRole });
         const refreshToken = rToken({ id: userId, name: userName, role: userRole });
 
-        // res.cookie("refreshToken", refreshToken, {
-        //     httpOnly: true, // Prevents JavaScript access
-        //     secure: config.nodeEnv === "production", // Ensures HTTPS-only (set false for local dev)
-        //     sameSite: config.nodeEnv === "production" ? "None" : "Lax", // Required for cross-origin requests
-        //     path: "/",
-        //     maxAge: 6 * 30 * 24 * 60 * 60 * 1000 // 6 months
-        // });
-
         const cookieOptions = {
             httpOnly: true,
             secure: config.nodeEnv === "production",
@@ -92,9 +84,9 @@ export const loginUserController = async (req, res) => {
     }
 };
 
-export const loginUserWithGoogleController = userPassposrtConfig.authenticate('google', {scope: ['profile', 'email']});
+export const loginUserWithGoogleController = passport.authenticate('google-user', {scope: ['profile', 'email'], session: false});
 
-export const loginUserWithGoogleCallback = userPassposrtConfig.authenticate('google', {session: false, failureRedirect: '/login'});
+export const loginUserWithGoogleCallback = passport.authenticate('google-user', {session: false, failureRedirect: '/login'});
 
 export const loginUserWithGoogleCallbackController = (req, res) => {
 

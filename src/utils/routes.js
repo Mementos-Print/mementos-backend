@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { router, userRouter } from "../users/users.routes.js";
+import { userRouter } from "../users/users.routes.js";
 import { tokenRouter } from "../tokens/tokens.routes.js";
 import { imagesRouter } from "../images/images.routes.js";
 import { staffRouter } from "../staff/staff.routes.js";
@@ -10,4 +10,3 @@ routes.use('/users', userRouter);
 routes.use('/tokens', tokenRouter);
 routes.use('/images', imagesRouter);
 routes.use('/staff',staffRouter);
-routes.use('/auth', router);
