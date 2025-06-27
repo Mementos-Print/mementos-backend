@@ -5,7 +5,8 @@ export const signUpStaff = async(staffID, email, name, password) => {
 
         const query = `
         INSERT INTO staff(staffID, email, name, password)
-        VALUES($1,$2,$3,$4);
+        VALUES($1,$2,$3,$4)
+        RETURNING *;
         `;
 
         const values = [staffID, email, name, password];

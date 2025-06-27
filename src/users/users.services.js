@@ -6,7 +6,8 @@ export const signUpUser = async(userID, email, name, password) => {
 
         const query = `
         INSERT INTO users(userID, email, name, password)
-        VALUES($1,$2,$3, $4);
+        VALUES($1,$2,$3, $4)
+        RETURNING *;
         `;
 
         const values = [userID, email, name, password];
