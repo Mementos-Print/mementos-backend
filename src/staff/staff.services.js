@@ -11,7 +11,9 @@ export const signUpStaff = async(staffID, email, name, password) => {
 
         const values = [staffID, email, name, password];
 
-        await executeQuery(query, values);
+        const result = await executeQuery(query, values);
+
+        return result;
         
     } catch (error) {
         console.error("Error inserting into staff table", error);

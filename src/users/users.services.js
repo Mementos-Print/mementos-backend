@@ -12,7 +12,9 @@ export const signUpUser = async(userID, email, name, password) => {
 
         const values = [userID, email, name, password];
 
-        await executeQuery(query, values);
+        const result = await executeQuery(query, values);
+
+        return result;
         
     } catch (error) {
         console.error("Error inserting into users table", error);
