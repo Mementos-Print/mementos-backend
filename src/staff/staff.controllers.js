@@ -256,7 +256,7 @@ export const loginStaffWithGoogleCallbackController = (req, res) => {
 
     try {
         const accessToken = aToken({id: req.user.userid, name: req.user.name, role: req.user.role});
-        const refreshToken = aToken({id: req.user.userid, name: req.user.name, role: req.user.role});
+        const refreshToken = rToken({id: req.user.userid, name: req.user.name, role: req.user.role});
 
     const cookieOptions = {
         httpOnly: true,
