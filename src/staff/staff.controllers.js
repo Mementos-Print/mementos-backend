@@ -102,9 +102,7 @@ export const loginStaffController = async (req, res) => {
             maxAge: 6 * 30 * 24 * 60 * 60 * 1000
         };
         
-        console.log("Cookie options:", cookieOptions);
-        
-        res.cookie("refreshToken", refreshToken, cookieOptions);        
+        res.cookie("staffRefreshToken", refreshToken, cookieOptions);        
 
         return res.status(201).json({
             Message: "Staff logged in successfully!",
@@ -266,7 +264,7 @@ export const loginStaffWithGoogleCallbackController = (req, res) => {
         maxAge: 6 * 30 * 24 * 60 * 60 * 1000
     };
     
-    res.cookie("refreshToken", refreshToken, cookieOptions);
+    res.cookie("staffRefreshToken", refreshToken, cookieOptions);
 
     return res.status(200).json({
         Message: "Staff logged in successfully!",

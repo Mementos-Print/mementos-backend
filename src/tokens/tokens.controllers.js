@@ -6,7 +6,7 @@ import { aToken } from "./jwt.js";
 export const refreshStaffTokenController = async (req, res) => {
     try {
         
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies.staffRefreshToken;
         if (!refreshToken) {
             return res.status(401).json({ Error: "No refresh token provided" });
         }
@@ -37,7 +37,7 @@ export const refreshStaffTokenController = async (req, res) => {
 export const refreshUserTokenController = async (req, res) => {
     try {
         
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies.userRefreshToken;
         if (!refreshToken) {
             return res.status(401).json({ Error: "No refresh token provided" });
         }
@@ -76,7 +76,7 @@ export const logoutStaffController = async (req, res) => {
         }
 
         // Clear the refresh token cookie
-        res.clearCookie("refreshToken", {
+        res.clearCookie("staffRefreshToken", {
             httpOnly: true,
             secure: true, // Only send over HTTPS in production
             sameSite: "None" // Adjust if frontend is on a different domain
@@ -106,7 +106,7 @@ export const logoutUserController = async (req, res) => {
         }
 
         // Clear the refresh token cookie
-        res.clearCookie("refreshToken", {
+        res.clearCookie("userRefreshToken", {
             httpOnly: true,
             secure: true, // Only send over HTTPS in production
             sameSite: "None" // Adjust if frontend is on a different domain

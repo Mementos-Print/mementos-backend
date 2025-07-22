@@ -71,7 +71,7 @@ export const loginUserController = async (req, res) => {
             maxAge: 6 * 30 * 24 * 60 * 60 * 1000
         };
         
-        res.cookie("refreshToken", refreshToken, cookieOptions);        
+        res.cookie("userRefreshToken", refreshToken, cookieOptions);        
 
         return res.status(user.rows.length === 0 ? 201 : 200).json({
             Message: "User logged in successfully!",
@@ -102,7 +102,7 @@ export const loginUserWithGoogleCallbackController = (req, res) => {
         maxAge: 6 * 30 * 24 * 60 * 60 * 1000
     };
     
-    res.cookie("refreshToken", refreshToken, cookieOptions);
+    res.cookie("userRefreshToken", refreshToken, cookieOptions);
 
     return res.status(200).json({
         Message: "User logged in successfully!",
