@@ -4,9 +4,8 @@ import { uploadImagesToDB, getPendingImagesForAdmin,
     getUploadedImagesForAdmin, getImagesById,
     deleteImages, getUploadedImagesForUsers
     } from "./images.services.js";
-import { processImage } from "./images.services.js";
-import { combinePolaroids } from "./images.services.js";
 import { deleteImagesSchema } from "../validators/images.js";
+import { combineEventPolaroids, getEventsImagesForUsers, processEventBlanks, processEventPolaroids } from "../event_images/event_images.services.js";
 
 
 export const uploadImagesController = async (req, res) => {
@@ -21,7 +20,7 @@ export const uploadImagesController = async (req, res) => {
       return res.status(400).json({ error: 'Invalid style' });
     }
 
-    const allowedColors = ['black', 'white', 'custom'];
+    const allowedColors = ['black', 'white'];
     if (borderColor && !allowedColors.includes(borderColor.toLowerCase())) {
       return res.status(400).json({ error: 'Invalid border color' });
     }
@@ -42,10 +41,10 @@ export const uploadImagesController = async (req, res) => {
       }
 
       const processedImages = await Promise.all(
-        files.map(file => processImage(file.buffer, style, borderColor))
+        files.map(file => processEventPolaroids(file.buffer, borderColor))
       );
 
-      const combinedImages = await combinePolaroids(processedImages);
+      const combinedImages = await combineEventPolaroids(processedImages);
 
       const uploadedImages = await Promise.all(
         combinedImages.map(async (imagePath) => {
@@ -69,10 +68,10 @@ export const uploadImagesController = async (req, res) => {
         )
       );
 
-    } else if (style === 'blank') {
+    } else {
       const processedImages = await Promise.all(
         files.map(async (file) => {
-          const outPath = await processImage(file.buffer, style, borderColor);
+          const outPath = await processEventBlanks(file.buffer, borderColor);
           const uploadResult = await saveToCloud(outPath);
           const { public_id, secure_url } = Array.isArray(uploadResult) ? uploadResult[0] : uploadResult;
 
@@ -124,12 +123,12 @@ export const getUploadedImagesForAdminController = async (req, res) => {
                 PendingImages: uploadedImages.rows
             });
 
-        } else if (filter == 'modified') {
+        } else if (filter == 'printed') {
 
             const uploadedImages = await getPendingImagesForAdmin(filter);
 
             return res.status(200).json({
-                ModifiedImages: uploadedImages.rows
+                PrintedIMages: uploadedImages.rows
             })
 
         } 
@@ -161,30 +160,11 @@ export const getUploadedImagesForUsersController = async (req, res) => {
                 Error: "Unauthorized."
             })
         };
-
-        // const {filter} = req.body;
-
-        // if (filter == 'pending') {
-
-        //     const uploadedImages = await getPendingImagesForAdmin(filter);
-
-        //     return res.status(200).json({
-        //         PendingImages: uploadedImages.rows
-        //     });
-
-        // } else if (filter == 'modified') {
-
-        //     const uploadedImages = await getPendingImagesForAdmin(filter);
-
-        //     return res.status(200).json({
-        //         ModifiedImages: uploadedImages.rows
-        //     })
-
-        // } 
         const uploadedImages = await getUploadedImagesForUsers(loggedInUser.id);
+        const eventImages = await getEventsImagesForUsers(loggedInUser.id);
 
         return res.status(200).json({
-            AllImages: uploadedImages.rows
+            AllImages: [uploadedImages.rows, eventImages.rows]
         });
 
     } catch (error) {

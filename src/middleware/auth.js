@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config/env.js';
-import { getEventUsers } from '../events/events.services.js';
 
 export const auth = async (req, res, next) => {
     try {
@@ -81,29 +80,4 @@ export const adminAuth = async (req, res, next) => {
         });
         
     }
-};
-
-export const eventAuth = async (req, res, next) => {
-  try {
-
-    const user = req.user;
-    const eventCode = req.body
-
-    const joinedEvent = await getEventUsers(user.id, eventCode);
-
-    if (joinedEvent.rows.length === 0) {
-        return res.status(403).json({
-            error: "enter an event code to join this event"
-        });
-    };
-
-    next();
-    
-  } catch (error) {
-
-    console.error("Internal server error: event auth", error);
-    
-    return res.status(500).json({Error: "Internal server error"});
-    
-  }  
 };

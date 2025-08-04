@@ -8,7 +8,8 @@ export const createEventsImagesTable = async () => {
         imageID VARCHAR(300) PRIMARY KEY,
         url VARCHAR(300) NOT NULL,
         style VARCHAR(50),
-        eventID CHAR NOT NULL,
+        status VARCHAR(100) DEFAULT('pending'),
+        eventID VARCHAR(6) NOT NULL,
         userID VARCHAR(300) NOT NULL,
         FOREIGN KEY(userID) REFERENCES users(userID) ON DELETE CASCADE,
         FOREIGN KEY(eventID) REFERENCES events(eventID) ON DELETE CASCADE

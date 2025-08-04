@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import path from "path";
 import sharp from "sharp";
 import fs from "fs/promises";
+import axios from "axios";
 
 
 export const uploadEventImages =  async (imageID, url, style, eventID, userID) => {
@@ -24,15 +25,46 @@ export const uploadEventImages =  async (imageID, url, style, eventID, userID) =
     
 };
 
+export const uploadEventImagesToDB = async (uploadResults, style, eventID, userID) => {
+    try {
+        const savePromises = uploadResults.map(({ public_id, secure_url }) => 
+            uploadEventImages(public_id, secure_url, style, eventID, userID)
+        );
+
+        await Promise.all(savePromises);
+    } catch (error) {
+        console.error("Error saving event images to DB:", error);
+    }
+};
+
 export const getEventsImagesForAdmin =  async (eventID) => {
     try {
 
         const query = `
         SELECT imageID, url, name FROM event_images e JOIN users u
-        on e.userID = i.userID AND eventID = 1$;
+        on e.userID = u.userID AND eventID = $1;
         `;
-
+        
         const results = await executeQuery(query, [eventID]);
+        
+        return results;
+        
+    } catch (error) {
+        console.error("Error querying event_images table", error);
+    }
+};
+
+export const getPendingEventsImagesForAdmin =  async (eventID, status) => {
+    try {
+
+        const query = `
+        SELECT imageID, url, name FROM event_images e JOIN users u
+        on e.userID = u.userID AND eventID = $1 AND status = $2;
+        `;
+        
+        const results = await executeQuery(query, [eventID, status]);
+        
+        return results;
         
     } catch (error) {
         console.error("Error querying event_images table", error);
@@ -43,11 +75,12 @@ export const getEventsImagesForUsers =  async (userID) => {
     try {
 
         const query = `
-        SELECT imageID, url, name FROM event_images e JOIN users u
-        on e.userID = i.userID AND eventID = 1$;
+        SELECT imageID, url FROM event_images WHERE userID = $1;
         `;
 
         const results = await executeQuery(query, [userID]);
+
+        return results;
         
     } catch (error) {
         console.error("Error querying event_images table", error);
@@ -71,6 +104,38 @@ export const uploadCustomBorder = async (borderID, URL, eventID) => {
     }
 };
 
+export const updateCustomBorder = async (borderID, URL, eventID) => {
+    try {
+
+        const query = `
+        UPDATE custom_borders
+        SET 
+        borderID = $1,
+        URL = $2
+        WHERE eventID = $3;
+        `;
+
+        const values =  [borderID, URL, eventID];
+
+        await executeQuery(query, values);
+        
+    } catch (error) {
+        console.error("Error updating custom_borders table", error);
+    }
+};
+
+export const updateCustomBorderToDB = async (uploadResults, eventID) => {
+    try {
+        const savePromises = uploadResults.map(({ public_id, secure_url }) => 
+            updateCustomBorder(public_id, secure_url, eventID)
+        );
+
+        await Promise.all(savePromises);
+    } catch (error) {
+        console.error("Error saving custom border to DB:", error);
+    }
+};
+
 export const uploadCustomBorderToDB = async (uploadResults, eventID) => {
     try {
         const savePromises = uploadResults.map(({ public_id, secure_url }) => 
@@ -83,8 +148,23 @@ export const uploadCustomBorderToDB = async (uploadResults, eventID) => {
     }
 };
 
-export const processEventImages = async (fileBuffer, style, borderColor) => {
+export const getCustomBorder = async (eventID) => {
+    try {
 
+        const query = `
+        SELECT * FROM custom_borders WHERE eventID = $1;
+        `;
+
+        const results = await executeQuery(query, [eventID]);
+
+        return results;
+        
+    } catch (error) {
+        console.error("Error querying custom_borders table", error);
+    }
+};
+
+export const generateOutpath = async () => {
     try {
 
         const __filename = fileURLToPath(import.meta.url);
@@ -108,13 +188,26 @@ export const processEventImages = async (fileBuffer, style, borderColor) => {
         // Construct the output file path
         const outPath = path.join(uploadsDir, `${uniqueId}_edited.png`);
 
+
+        return outPath;
+        
+    } catch (error) {
+        console.log("Error processing generating outpath", error);
+    }
+};
+
+export const processEventBlanks = async (fileBuffer, borderColor, customBorder) => {
+    try {
+
+        const outPath = await generateOutpath();
+
         let image = sharp(fileBuffer);
         const metadata = await image.metadata();
         const { width, height } = metadata;
 
-        let finalWidth, finalHeight, borderSize, leftBorder, bottomBorder;
+        let finalWidth, finalHeight, borderSize
 
-        if (style === 'blank' && width > height) {
+        if (width > height) {
             finalWidth = 1100;
             finalHeight = 1700;
             borderSize = 50;
@@ -124,15 +217,9 @@ export const processEventImages = async (fileBuffer, style, borderColor) => {
                 width: finalWidth,
                 height: finalHeight,
                 fit: 'fill'
-            }).extend({
-                top: borderSize,
-                bottom: borderSize,
-                left: borderSize,
-                right: borderSize,
-                background: borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 }
-            });
+            })
         
-        } else if(style === 'blank' && width < height) {
+        } else if (width < height) {
             finalWidth = 1100;
             finalHeight = 1700;
             borderSize = 50;
@@ -141,33 +228,58 @@ export const processEventImages = async (fileBuffer, style, borderColor) => {
                 width: finalWidth,
                 height: finalHeight,
                 fit: 'fill'
-            }).extend({
-                top: borderSize,
-                bottom: borderSize,
-                left: borderSize,
-                right: borderSize,
-                background: borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 }
             })
-        } else if(style === 'eventBorder' && width > height){
-            finalWidth = 1200;
-            finalHeight = 1800;
+        }
 
-            image = image.rotate(90)
-            .resize({
-                width: finalWidth,
-                height: finalHeight,
-                fit: 'fill'
-            })
-        } else if (style === 'eventBorder' && width < height){
-            finalWidth = 1200;
-            finalHeight = 1800;
+        image = await image.toBuffer();
 
-            image = image.resize({
-                width: finalWidth,
-                height: finalHeight,
-                fit: 'fill'
-            })
-        } else if(style === 'polaroid' && width > height) {
+        let base;
+
+        if(borderColor === 'custom') {
+            const response = await axios.get(customBorder.rows[0].url, { responseType: 'arraybuffer' });
+            const customBorderBuffer = Buffer.from(response.data, 'binary');
+            base = sharp(customBorderBuffer);
+        } else {
+
+            const color = borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+            
+            base = sharp({
+                create: {
+                    width: 1200,
+                    height: 1800,
+                    channels: 3,
+                    background: color
+                }
+            });
+
+        }
+
+        image = base.composite([{
+            input: image,
+            top: 50,
+            left: 50
+        }]);
+
+        await image.toFile(outPath);
+        return outPath;
+        
+    } catch (error) {
+        console.error("Error processing event images", error);
+    }
+};
+
+export const processEventPolaroids = async (fileBuffer, borderColor, customBorder) => {
+    try {
+
+        const outPath = await generateOutpath();
+
+        let image = sharp(fileBuffer);
+        const metadata = await image.metadata();
+        const { width, height } = metadata;
+
+        let finalWidth, finalHeight, borderSize, base, bottomBorder, leftBorder;
+
+        if( width > height) {
             finalWidth = 705;
             finalHeight = 1100;
             borderSize = 50;
@@ -175,52 +287,136 @@ export const processEventImages = async (fileBuffer, style, borderColor) => {
 
             image = image.rotate(90)
             .resize({
-            width: finalWidth,
-            height: finalHeight,
-            fit: 'fill'
-        }).extend({
-            top: borderSize,
-            bottom: borderSize,
-            left: leftBorder,
-            right: borderSize,
-            background: borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 }
-        })
-        } else {
+                width: finalWidth,
+                height: finalHeight,
+                fit: 'fill'
+            })
+
+            image = await image.toBuffer();
+
+            if (borderColor === 'custom') {
+                const response = await axios.get(customBorder.rows[0].url, { responseType: 'arraybuffer' });
+                const customBorderBuffer = Buffer.from(response.data, 'binary');
+                base = sharp(customBorderBuffer)
+                .resize({
+                    width: 900,
+                    height: 1200,
+                    fit: 'fill'
+                });
+            } else {
+                const color = borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+            
+                base = sharp({
+                    create: {
+                        width: 900,
+                        height: 1200,
+                        channels: 3,
+                        background: color
+                    }
+                });
+            }
+
+            image = base.composite([{
+                input: image,
+                top: 50,
+                left: 145
+            }])
+
+            await image.toFile(outPath);
+            return outPath;
+
+        } else if (width < height){
             finalWidth = 800;
             finalHeight = 1005;
             borderSize = 50;
             bottomBorder = 145;
 
             image = image.resize({
-            width: finalWidth,
-            height: finalHeight,
-            fit: 'fill'
-        }).extend({
-            top: borderSize,
-            bottom: bottomBorder,
-            left: borderSize,
-            right: borderSize,
-            background: borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 }
-        })
-    };
+                width: finalWidth,
+                height: finalHeight,
+                fit: 'fill'
+            })
+
+            image = await image.toBuffer();
+
+            if (borderColor === 'custom') {
+                const response = await axios.get(customBorder.rows[0].url, { responseType: 'arraybuffer' });
+                const customBorderBuffer = Buffer.from(response.data, 'binary');
+                base = sharp(customBorderBuffer)
+                .resize({
+                    width: 900,
+                    height: 1200,
+                    fit: 'fill'
+                });
+            } else {
+                const color = borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+            
+                base = sharp({
+                    create: {
+                        width: 900,
+                        height: 1200,
+                        channels: 3,
+                        background: color
+                    }
+                });
+            }
+
+            image = base.composite([{
+                input: image,
+                left: 50,
+                top: 50,
+            }])
+
+            await image.toFile(outPath);
+            return outPath;
+
+        };
+        
+    } catch (error) {
+        console.error("Error processing event polaroids", error);
+    }
+};
+
+export const processEventBorders = async (fileBuffer) => {
+
+    try {
+
+        const outPath = await generateOutpath();
+
+        let image = sharp(fileBuffer);
+        const metadata = await image.metadata();
+        const { width, height } = metadata;
+
+        let finalWidth, finalHeight
+
+        if (width > height){
+            finalWidth = 1200;
+            finalHeight = 1800;
+
+            image = image.rotate(90)
+            .resize({
+                width: finalWidth,
+                height: finalHeight,
+                fit: 'fill'
+            })
+        } else {
+            finalWidth = 1200;
+            finalHeight = 1800;
+
+            image = image.resize({
+                width: finalWidth,
+                height: finalHeight,
+                fit: 'fill'
+            })
+        } 
 
         await image.toFile(outPath);
         return outPath;
         
     } catch (error) {
-        console.error("Error processing event images", error);
-        return res.status(500).json({Error: "Internal server error"})
+        console.error("Error processing event border", error);
     }
 };
-
-// export const addBorder = async (params) => {
-//     try {
-        
-//     } catch (error) {
-//         console.error("Error adding border to event images", error);
-//         return res.status(500).json({Error: "Internal server error"});
-//     }
-// }
 
 export const combineEventPolaroids = async (imagePaths) => {
     

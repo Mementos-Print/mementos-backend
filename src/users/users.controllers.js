@@ -75,7 +75,8 @@ export const loginUserController = async (req, res) => {
 
         return res.status(user.rows.length === 0 ? 201 : 200).json({
             Message: "User logged in successfully!",
-            accessToken
+            accessToken,
+            userName
         });
 
     } catch (error) {
@@ -106,7 +107,8 @@ export const loginUserWithGoogleCallbackController = (req, res) => {
 
     return res.status(200).json({
         Message: "User logged in successfully!",
-        accessToken
+        accessToken,
+        name: req.user.name
     });
     } catch (error) {
         console.log("Error logging in user with google", error);

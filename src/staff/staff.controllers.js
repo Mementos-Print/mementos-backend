@@ -106,7 +106,8 @@ export const loginStaffController = async (req, res) => {
 
         return res.status(201).json({
             Message: "Staff logged in successfully!",
-            accessToken
+            accessToken,
+            staffName
         });
     } catch (error) {
         console.log("Error logging in:", error);
@@ -268,7 +269,8 @@ export const loginStaffWithGoogleCallbackController = (req, res) => {
 
     return res.status(200).json({
         Message: "Staff logged in successfully!",
-        accessToken
+        accessToken,
+        name: req.user.name
     });
     } catch (error) {
         console.log("Error logging in staff with google", error);
