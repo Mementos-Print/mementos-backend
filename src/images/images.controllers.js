@@ -5,7 +5,7 @@ import { uploadImagesToDB, getPendingImagesForAdmin,
     deleteImages, getUploadedImagesForUsers
     } from "./images.services.js";
 import { deleteImagesSchema } from "../validators/images.js";
-import { combineEventPolaroids, getEventsImagesForUsers, processEventBlanks, processEventPolaroids } from "../event_images/event_images.services.js";
+import { combineEventMementoV, getEventsImagesForUsers, processEventMementoS, processEventMementoV } from "../event_images/event_images.services.js";
 
 
 export const uploadImagesController = async (req, res) => {
@@ -16,7 +16,7 @@ export const uploadImagesController = async (req, res) => {
     const style = req.query.style;
     const borderColor = req.query.border;
 
-    if (!['blank', 'polaroid'].includes(style)) {
+    if (!['mementoS', 'mementoV'].includes(style)) {
       return res.status(400).json({ error: 'Invalid style' });
     }
 
@@ -35,16 +35,16 @@ export const uploadImagesController = async (req, res) => {
       return res.status(400).json({ error: "One or more files exceed 5MB limit" });
     }
 
-    if (style === 'polaroid') {
+    if (style === 'mementoV') {
       if (files.length % 2 !== 0) {
         return res.status(400).json({ error: "Please upload an even number of images" });
       }
 
       const processedImages = await Promise.all(
-        files.map(file => processEventPolaroids(file.buffer, borderColor))
+        files.map(file => processEventMementoV(file.buffer, borderColor))
       );
 
-      const combinedImages = await combineEventPolaroids(processedImages);
+      const combinedImages = await combineEventMementoV(processedImages);
 
       const uploadedImages = await Promise.all(
         combinedImages.map(async (imagePath) => {
@@ -71,7 +71,7 @@ export const uploadImagesController = async (req, res) => {
     } else {
       const processedImages = await Promise.all(
         files.map(async (file) => {
-          const outPath = await processEventBlanks(file.buffer, borderColor);
+          const outPath = await processEventMementoS(file.buffer, borderColor);
           const uploadResult = await saveToCloud(outPath);
           const { public_id, secure_url } = Array.isArray(uploadResult) ? uploadResult[0] : uploadResult;
 

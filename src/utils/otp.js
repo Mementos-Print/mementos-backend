@@ -19,7 +19,7 @@ export const generateEventCode = async (tableName, tableID) => {
 
         const codeExists = await getEventsByID(tableName, tableID, eventCode);
 
-        if (codeExists.length === 0) unique = true;
+        if (codeExists.rows.length === 0) unique = true;
 
     }
     return eventCode;

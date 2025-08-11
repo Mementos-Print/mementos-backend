@@ -14,7 +14,7 @@ export const createEvent = async(eventID, title, staff, date) => {
 
         const result = await executeQuery(query, values);
 
-        return result.rows;
+        return result;
         
     } catch (error) {
         console.error("Error inserting into events table", error);
@@ -30,7 +30,7 @@ export const getEvents = async () => {
 
         const result = await executeQuery(query, []);
 
-        return result.rows;
+        return result;
         
     } catch (error) {
         console.error("Error selecting from events and custom_borders table", error);
@@ -46,7 +46,7 @@ export const getEventsByID = async (tableName, tableID, eventID) => {
 
         const result = await executeQuery(query, [eventID]);
 
-        return result.rows;
+        return result;
         
     } catch (error) {
         console.error(`Error selecting from ${tableName} table`, error);

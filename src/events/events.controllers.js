@@ -1,7 +1,7 @@
 import { processEventBorderController } from "../event_images/event_images.controllers.js";
 import { generateEventCode } from "../utils/otp.js";
 import { createEventSchema, updateEventSchema } from "../validators/events.js";
-import { createEvent, deleteEvent, getEvents, getEventsByID, updateEvent } from "./events.services.js";
+import { createEvent, deleteEvent, getEventsByID, updateEvent } from "./events.services.js";
 
 
 export const createEventController = async (req, res) => {
@@ -27,11 +27,21 @@ export const createEventController = async (req, res) => {
 
         let border;
 
-        if(file) border = await processEventBorderController(file, eventCode);
+        if(file.length > 0) {
+
+            border = await processEventBorderController(file, eventCode);
+
+            return res.status(201).json({
+            Message: "Event created successfully:",
+            event: event.rows, 
+            custom_border: border[0].secure_url
+        })
+
+        };
 
         return res.status(201).json({
-            Message: "Event created successfully:", event, 
-            custom_border: border[0].secure_url
+            Message: "Event created successfully:",
+            event: event.rows
         });
         
     } catch (error) {
@@ -61,7 +71,7 @@ export const updateEventController = async (req, res) => {
 
         if(!eventCode) return res.status(400).json({Error: "Event code is required"});
 
-        if(staffCreatedEvent[0].staff !== loggedInStaff.id || staffCreatedEvent.length === 0) return res.status(401).json({Error: "Unauthorized"});
+        if(staffCreatedEvent.rows[0].staff !== loggedInStaff.id || staffCreatedEvent.rows.length === 0) return res.status(401).json({Error: "Unauthorized"});
 
         const updatedEvent = await updateEvent(title, date, eventCode);
 
@@ -88,9 +98,9 @@ export const viewEventsController = async (req, res) => {
 
         if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
 
-        const availableEvents = await getEvents();
+        const availableEvents = await getEventsByID('events', 'staff', loggedIn.id);
 
-        return res.status(200).json({availableEvents});
+        return res.status(200).json({events: availableEvents.rows});
         
     } catch (error) {
 
@@ -108,15 +118,15 @@ export const deleteEventController = async (req, res) => {
 
         if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
 
-        const eventCode = req.body.eventCode;
+        const eventCode = req.query.eventCode;
 
         if(!eventCode) return res.status(400).json({Error: "Event code is required"});
 
         const eventExists = await getEventsByID('events', 'eventID', eventCode);
 
-        if (eventExists.length === 0) return res.status(404).json({Error: "Event not found. Kindly check the event code and try again"});
+        if (eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found. Kindly check the event code and try again"});
 
-        if(loggedIn.id !== eventExists[0].staff) return res.status(401).json({Error: "You are not authorized to peeform this action"});
+        if(loggedIn.id !== eventExists.rows[0].staff) return res.status(401).json({Error: "You are not authorized to peeform this action"});
 
         await deleteEvent(eventCode);
 

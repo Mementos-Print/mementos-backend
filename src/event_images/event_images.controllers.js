@@ -1,10 +1,12 @@
 import { getEventsByID } from "../events/events.services.js";
 import { deleteImagesFromCloud, saveToCloud } from "../middleware/images.js";
-import { combineEventPolaroids, getCustomBorder, 
+import { combineEventMementoV, getCustomBorder, 
   getEventsImagesForAdmin, 
   getPendingEventsImagesForAdmin, 
-  processEventBlanks, processEventBorders,
-   processEventPolaroids, updateCustomBorderToDB, uploadCustomBorderToDB, uploadEventImagesToDB 
+  processEventBorders,
+  processEventMementoS,
+  processEventMementoV,
+  updateCustomBorderToDB, uploadCustomBorderToDB, uploadEventImagesToDB 
   } from "./event_images.services.js";
 import fs from "fs/promises";
 
@@ -35,12 +37,12 @@ export const processEventBorderController = async (files, eventID) => {
 
       const eventExists = await getEventsByID('custom_borders', 'eventID', eventID);
 
-      if (eventExists.length === 0) {
+      if (eventExists.rows.length === 0) {
         await uploadCustomBorderToDB(processedImages, eventID);
       } else {
         await updateCustomBorderToDB(processedImages, eventID);
 
-        await deleteImagesFromCloud(eventExists[0].borderid);
+        await deleteImagesFromCloud(eventExists.rows[0].borderid);
       }
       
       await Promise.all(
@@ -65,19 +67,21 @@ export const uploadEventImagesControler = async (req, res) => {
 
     if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
 
-    const {eventCode} = req.body;
+    const eventCode = req.query.eventCode;
+    const style = req.query.style;
+    const borderColor = req.query.border;
+
+    if(!eventCode) return res.status(400).json({Error: "Event code is required"});
 
     const eventExists = await getEventsByID('events', 'eventid', eventCode);
 
-    if ( eventExists.length === 0) return res.status(404).json({Error: "Event not found. Kindly check the event code and try again"});
-
-    const style = req.query.style;
-    const borderColor = req.query.border;
+    if ( eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found. Kindly check the event code and try again"});
+    
     const customBorder = await getCustomBorder(eventCode);
 
     if(borderColor === 'custom' && customBorder.rows.length === 0) return res.status(404).json({Message: "No custom border available for this event"});
 
-    if (!['blank', 'polaroid'].includes(style)) return res.status(400).json({ error: 'Invalid style' });
+    if (!['mementoS', 'mementoV'].includes(style)) return res.status(400).json({ error: 'Invalid style' });
 
     if(!['black', 'white', 'custom'].includes(borderColor)) return res.status(400).json({ error: 'Invalid border' });
 
@@ -91,10 +95,10 @@ export const uploadEventImagesControler = async (req, res) => {
       return res.status(400).json({ error: "One or more files exceed 5MB limit" });
     };
 
-    if (style === 'blank') {
+    if (style === 'mementoS') {
       const processedImages = await Promise.all(
               files.map(async (file) => {
-                const outPath = await processEventBlanks(file.buffer, borderColor, customBorder);
+                const outPath = await processEventMementoS(file.buffer, borderColor, customBorder);
                 const uploadResult = await saveToCloud(outPath);
                 const { public_id, secure_url } = Array.isArray(uploadResult) ? uploadResult[0] : uploadResult;
       
@@ -123,10 +127,10 @@ export const uploadEventImagesControler = async (req, res) => {
             }
       
             const processedImages = await Promise.all(
-              files.map(file => processEventPolaroids(file.buffer, borderColor, customBorder))
+              files.map(file => processEventMementoV(file.buffer, borderColor, customBorder))
             );
       
-            const combinedImages = await combineEventPolaroids(processedImages);
+            const combinedImages = await combineEventMementoV(processedImages);
       
             const uploadedImages = await Promise.all(
               combinedImages.map(async (imagePath) => {
@@ -172,7 +176,7 @@ export const getUploadedEventImagesForAdminController = async (req, res) => {
         };
 
         const filter = req.query.filter;
-        const eventCode = req.body.eventCode;
+        const eventCode = req.query.eventCode;
 
         if(!eventCode) return res.status(400).json({Error: "Event code required"});
 

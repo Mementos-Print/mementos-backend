@@ -6,6 +6,6 @@ import { uploadImages } from "../middleware/images.js";
 export const eventRouter = Router();
 
 eventRouter.post('/', auth, staffAuth, uploadImages, createEventController);
-eventRouter.get('/', auth, viewEventsController);
+eventRouter.get('/', auth, staffAuth, viewEventsController);
 eventRouter.delete('/', auth, staffAuth, deleteEventController);
 eventRouter.patch('/:eventCode', auth, staffAuth, uploadImages, updateEventController);

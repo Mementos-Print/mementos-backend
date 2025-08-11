@@ -196,7 +196,7 @@ export const generateOutpath = async () => {
     }
 };
 
-export const processEventBlanks = async (fileBuffer, borderColor, customBorder) => {
+export const processEventMementoS = async (fileBuffer, borderColor, customBorder) => {
     try {
 
         const outPath = await generateOutpath();
@@ -268,7 +268,7 @@ export const processEventBlanks = async (fileBuffer, borderColor, customBorder) 
     }
 };
 
-export const processEventPolaroids = async (fileBuffer, borderColor, customBorder) => {
+export const processEventMementoV = async (fileBuffer, borderColor, customBorder) => {
     try {
 
         const outPath = await generateOutpath();
@@ -418,7 +418,7 @@ export const processEventBorders = async (fileBuffer) => {
     }
 };
 
-export const combineEventPolaroids = async (imagePaths) => {
+export const combineEventMementoV = async (imagePaths) => {
     
     try {
 
