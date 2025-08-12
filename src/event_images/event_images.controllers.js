@@ -180,6 +180,10 @@ export const getUploadedEventImagesForAdminController = async (req, res) => {
 
         if(!eventCode) return res.status(400).json({Error: "Event code required"});
 
+        const eventExists = await getEventsByID('events', 'eventID', eventCode);
+
+        if(eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found. Kindly check the code and try again."})
+
         if (filter == 'pending') {
 
             const uploadedImages = await getPendingEventsImagesForAdmin(eventCode, filter);
