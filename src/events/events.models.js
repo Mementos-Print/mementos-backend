@@ -21,3 +21,24 @@ export const createEventsTable = async () => {
     
     }
 };
+
+export const createEventUsersTable = async () => {
+    try {
+
+        const query = `
+        CREATE TABLE IF NOT EXISTS event_users(
+        id VARCHAR(300) NOT NULL PRIMARY KEY,
+        userID VARCHAR(300) NOT NULL,
+        eventID VARCHAR(300) NOT NULL,
+        joinedAt DATE NOT NULL,
+        FOREIGN KEY(userID) REFERENCES users(userID) ON DELETE CASCADE,
+        FOREIGN KEY(eventID) REFERENCES events(eventID) ON DELETE CASCADE
+        );
+        `;
+
+        await executeQuery(query, []);
+        
+    } catch (error) {
+        console.error("Error creating event users table", error);
+    }
+};
