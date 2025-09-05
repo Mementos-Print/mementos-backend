@@ -37,15 +37,17 @@ export const uploadEventImagesToDB = async (uploadResults, style, eventID, userI
     }
 };
 
-export const getEventsImagesForAdmin =  async (eventID) => {
+export const getEventsImagesForAdmin =  async (staffID) => {
     try {
 
         const query = `
-        SELECT imageID, url, name FROM event_images e JOIN users u
-        on e.userID = u.userID AND eventID = $1;
+        SELECT imageID, url, name "uploader name", title event FROM event_images eimg
+        JOIN users u on eimg.userID = u.userID
+        JOIN events ev ON eimg.eventID = ev.eventID
+        WHERE ev.staff = $1;
         `;
         
-        const results = await executeQuery(query, [eventID]);
+        const results = await executeQuery(query, [staffID]);
         
         return results;
         
@@ -54,15 +56,17 @@ export const getEventsImagesForAdmin =  async (eventID) => {
     }
 };
 
-export const getPendingEventsImagesForAdmin =  async (eventID, status) => {
+export const getPendingEventsImagesForAdmin =  async (staffID, status) => {
     try {
 
         const query = `
-        SELECT imageID, url, name FROM event_images e JOIN users u
-        on e.userID = u.userID AND eventID = $1 AND status = $2;
+        SELECT imageID, url, name "uploader name", title event FROM event_images eimg
+        JOIN users u on eimg.userID = u.userID
+        JOIN events ev ON eimg.eventID = ev.eventID
+        WHERE ev.staff = $1 AND eimg.status = $2;
         `;
         
-        const results = await executeQuery(query, [eventID, status]);
+        const results = await executeQuery(query, [staffID, status]);
         
         return results;
         

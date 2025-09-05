@@ -176,17 +176,10 @@ export const getUploadedEventImagesForAdminController = async (req, res) => {
         };
 
         const filter = req.query.filter;
-        const eventCode = req.query.eventCode;
-
-        if(!eventCode) return res.status(400).json({Error: "Event code required"});
-
-        const eventExists = await getEventsByID('events', 'eventID', eventCode);
-
-        if(eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found. Kindly check the code and try again."})
 
         if (filter == 'pending') {
 
-            const uploadedImages = await getPendingEventsImagesForAdmin(eventCode, filter);
+            const uploadedImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
 
             return res.status(200).json({
                 PendingImages: uploadedImages.rows
@@ -194,14 +187,14 @@ export const getUploadedEventImagesForAdminController = async (req, res) => {
 
         } else if (filter == 'printed') {
 
-            const uploadedImages = await getPendingEventsImagesForAdmin(eventCode, filter);
+            const uploadedImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
 
             return res.status(200).json({
                 PrintedImages: uploadedImages.rows
             })
 
         } 
-            const uploadedImages = await getEventsImagesForAdmin(eventCode);
+            const uploadedImages = await getEventsImagesForAdmin(loggedInStaff.id);
 
         return res.status(200).json({
             AllImages: uploadedImages.rows
