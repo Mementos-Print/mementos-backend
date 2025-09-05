@@ -53,6 +53,39 @@ export const getEventsByID = async (tableName, tableID, eventID) => {
     }
 };
 
+export const joinEvent = async (ID, userID, eventID) => {
+    try {
+
+        const query = `
+        INSERT INTO event_users(ID, userID, eventID);
+        VALUES(1$, 2$, 3$)
+        `;
+
+        const values = [ID, userID, eventID];
+
+        await executeQuery(query, values);
+        
+    } catch (error) {
+        console.error("Error inserting into event users table", error);
+    }
+};
+
+export const getEventUsers = async (userID, eventCode) => {
+    try {
+
+        const query = `
+        SELECT * FROM event_users WHERE userID = $1 AND eventID = $2
+        `;
+
+        const result = await executeQuery(query, [userID, eventCode]);
+
+        return result;
+        
+    } catch (error) {
+        console.error("Error selecting from event users table", error);
+    }
+};
+
 export const updateEvent = async (title, date, eventCode) => {
     try {
 

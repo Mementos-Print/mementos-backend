@@ -9,3 +9,7 @@ export const updateEventSchema = joi.object({
     title: joi.string(),
     date: joi.date()
 });
+
+export const joinEventSchema = joi.object({
+    eventCode: joi.string().required().min(6)
+});

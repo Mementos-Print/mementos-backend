@@ -1,7 +1,7 @@
 import { processEventBorderController } from "../event_images/event_images.controllers.js";
 import { generateEventCode } from "../utils/otp.js";
-import { createEventSchema, updateEventSchema } from "../validators/events.js";
-import { createEvent, deleteEvent, getEventsByID, updateEvent } from "./events.services.js";
+import { createEventSchema, joinEventSchema, updateEventSchema } from "../validators/events.js";
+import { createEvent, deleteEvent, getEventsByID, getEventUsers, joinEvent, updateEvent } from "./events.services.js";
 
 
 export const createEventController = async (req, res) => {
@@ -141,36 +141,40 @@ export const deleteEventController = async (req, res) => {
     }
 };
 
-// export const joinEventsController = async (req, res) => {
-//     try {
+export const joinEventsController = async (req, res) => {
+    try {
 
-//         const loggedIn = req.user;
+        const loggedIn = req.user;
 
-//         if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
+        if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
 
-//         const {error, value} = joinEventSchema.validate(req.body);
+        const {error, value} = joinEventSchema.validate(req.body);
 
-//         if(error) return res.status(400).json({Error: error.message});
+        if(error) return res.status(400).json({Error: error.message});
 
-//         const {eventCode} = value;
+        const {eventCode} = value;
 
-//         const eventExists = await getEventsByID('events', 'eventID', eventCode);
+        const eventExists = await getEventsByID('events', 'eventID', eventCode);
 
-//         if(eventExists.length === 0) return res.status(404).json({Error: "Event not found. Check the code and try again."});
+        if(eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found. Check the code and try again."});
 
-//         const alreadyJoinedEvent = await getEventUsers(loggedIn.id, eventCode);
+        const alreadyJoinedEvent = await getEventUsers(loggedIn.id, eventCode);
 
-//         const id = await generateEventCode('event_users', 'id');
+        if (alreadyJoinedEvent.rows.length === 0) {
 
-//         if (alreadyJoinedEvent.rows.length === 0) await joinEvent(id, loggedIn.id, eventCode);
+            const id = await generateEventCode('event_users', 'id');
 
-//         return res.status(200).json({event: eventExists});
+            await joinEvent(id, loggedIn.id, eventCode);
+
+        };
+
+        return res.status(200).json({event: eventExists.rows[0]});
         
-//     } catch (error) {
+    } catch (error) {
 
-//         console.error("Error joing event", error);
+        console.error("Error joing event", error);
         
-//         return res.status(500).json({Error: "Internal server error"});
+        return res.status(500).json({Error: "Internal server error"});
         
-//     }
-// };
+    }
+};
