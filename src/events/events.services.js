@@ -57,8 +57,8 @@ export const joinEvent = async (ID, userID, eventID) => {
     try {
 
         const query = `
-        INSERT INTO event_users(ID, userID, eventID);
-        VALUES(1$, 2$, 3$)
+        INSERT INTO event_users(ID, userID, eventID)
+        VALUES($1, $2, $3);
         `;
 
         const values = [ID, userID, eventID];

@@ -1,6 +1,7 @@
 import { processEventBorderController } from "../event_images/event_images.controllers.js";
+import { getCustomBorder } from "../event_images/event_images.services.js";
 import { generateEventCode } from "../utils/otp.js";
-import { createEventSchema, joinEventSchema, updateEventSchema } from "../validators/events.js";
+import { createEventSchema, updateEventSchema } from "../validators/events.js";
 import { createEvent, deleteEvent, getEventsByID, getEventUsers, joinEvent, updateEvent } from "./events.services.js";
 
 
@@ -148,15 +149,15 @@ export const joinEventsController = async (req, res) => {
 
         if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
 
-        const {error, value} = joinEventSchema.validate(req.body);
+        const eventCode = req.query.eventCode;
 
-        if(error) return res.status(400).json({Error: error.message});
-
-        const {eventCode} = value;
+        if(!eventCode) return res.status(400).json({error: "event code is required"});
 
         const eventExists = await getEventsByID('events', 'eventID', eventCode);
-
+        
         if(eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found. Check the code and try again."});
+
+        const customBorder = await getCustomBorder(eventCode);
 
         const alreadyJoinedEvent = await getEventUsers(loggedIn.id, eventCode);
 
@@ -166,6 +167,13 @@ export const joinEventsController = async (req, res) => {
 
             await joinEvent(id, loggedIn.id, eventCode);
 
+        };
+
+        if (customBorder.rows.length > 0) {
+            return res.status(200).json({
+                event: eventExists.rows[0],
+                customBorder: customBorder.rows[0].url
+            });
         };
 
         return res.status(200).json({event: eventExists.rows[0]});
