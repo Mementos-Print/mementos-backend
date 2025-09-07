@@ -30,7 +30,7 @@ export const createEventUsersTable = async () => {
         id VARCHAR(300) NOT NULL PRIMARY KEY,
         userID VARCHAR(300) NOT NULL,
         eventID VARCHAR(300) NOT NULL,
-        joinedAt DATE NOT NULL,
+        joinedAt TIMESTAMP DEFAULT (TIMESTAMP),
         FOREIGN KEY(userID) REFERENCES users(userID) ON DELETE CASCADE,
         FOREIGN KEY(eventID) REFERENCES events(eventID) ON DELETE CASCADE
         );
