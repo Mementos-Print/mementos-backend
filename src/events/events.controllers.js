@@ -99,6 +99,14 @@ export const viewEventsController = async (req, res) => {
 
         if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
 
+        const eventCode = req.query.eventCode;
+
+        if(eventCode) {
+            const availableEvents = await getEventsByID("events", "eventID", eventCode);
+
+            return res.status(200).json({events: availableEvents.rows});
+        };
+
         const availableEvents = await getEventsByID('events', 'staff', loggedIn.id);
 
         return res.status(200).json({events: availableEvents.rows});
