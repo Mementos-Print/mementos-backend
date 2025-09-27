@@ -86,18 +86,19 @@ export const getEventUsers = async (userID, eventCode) => {
     }
 };
 
-export const updateEvent = async (title, date, eventCode) => {
+export const updateEvent = async (title, date, status, eventCode) => {
     try {
 
         const query = `
         UPDATE events SET
         title = COALESCE($1, title),
-        event_date = COALESCE($2, event_date)
+        event_date = COALESCE($2, event_date),
+        status = COALESCE($3, status)
         WHERE eventID = $3
         RETURNING *;
         `;
 
-        const values = [title, date, eventCode];
+        const values = [title, date, status, eventCode];
 
         const result = await executeQuery(query, values);
 

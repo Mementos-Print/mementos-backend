@@ -66,7 +66,7 @@ export const updateEventController = async (req, res) => {
 
         if (error) return res.status(400).json({Error: error.message});
         
-        const {title, date} = value;
+        const {title, date, status} = value;
         const file = req.files;
         const staffCreatedEvent = await getEventsByID('events', 'eventID', eventCode);
 
@@ -74,7 +74,7 @@ export const updateEventController = async (req, res) => {
 
         if(staffCreatedEvent.rows[0].staff !== loggedInStaff.id || staffCreatedEvent.rows.length === 0) return res.status(401).json({Error: "Unauthorized"});
 
-        const updatedEvent = await updateEvent(title, date, eventCode);
+        const updatedEvent = await updateEvent(title, date, status, eventCode);
 
         if(file) await processEventBorderController(file, eventCode);
 
