@@ -7,5 +7,6 @@ export const createEventSchema = joi.object({
 
 export const updateEventSchema = joi.object({
     title: joi.string(),
-    date: joi.date()
+    date: joi.date(),
+    status: joi.string()
 });
