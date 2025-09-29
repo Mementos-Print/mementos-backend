@@ -5,9 +5,7 @@ const { Pool } = pkg;
 
 const getConnection = new Pool({
     connectionString: config.dburl,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    ssl: config.nodeEnv === "production" ? {rejectUnauthorized: false} : false
 });
 
 export const executeQuery = (query, values) => {
