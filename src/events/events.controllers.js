@@ -70,6 +70,8 @@ export const updateEventController = async (req, res) => {
         const file = req.files;
         const staffCreatedEvent = await getEventsByID('events', 'eventID', eventCode);
 
+        // validate the code
+
         if(!eventCode) return res.status(400).json({Error: "Event code is required"});
 
         if(staffCreatedEvent.rows[0].staff !== loggedInStaff.id || staffCreatedEvent.rows.length === 0) return res.status(401).json({Error: "Unauthorized"});

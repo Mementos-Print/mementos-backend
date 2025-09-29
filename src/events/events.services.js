@@ -94,7 +94,7 @@ export const updateEvent = async (title, date, status, eventCode) => {
         title = COALESCE($1, title),
         event_date = COALESCE($2, event_date),
         status = COALESCE($3, status)
-        WHERE eventID = $3
+        WHERE eventID = $4
         RETURNING *;
         `;
 
