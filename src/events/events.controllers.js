@@ -74,6 +74,10 @@ export const updateEventController = async (req, res) => {
 
         if(!eventCode) return res.status(400).json({Error: "Event code is required"});
 
+        const eventExists = await getEventsByID('events', 'eventID', eventCode);
+
+        if (eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found"});
+
         if(staffCreatedEvent.rows[0].staff !== loggedInStaff.id || staffCreatedEvent.rows.length === 0) return res.status(401).json({Error: "Unauthorized"});
 
         const updatedEvent = await updateEvent(title, date, status, eventCode);
@@ -105,6 +109,8 @@ export const viewEventsController = async (req, res) => {
 
         if(eventCode) {
             const availableEvents = await getEventsByID("events", "eventID", eventCode);
+
+            if (availableEvents.rows.length === 0) return res.status(404).json({Error: "Event not found"});
 
             return res.status(200).json({events: availableEvents.rows});
         };
