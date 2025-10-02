@@ -63,7 +63,8 @@ export const getPendingEventsImagesForAdmin =  async (staffID, status) => {
         SELECT imageID, url, name "uploaderName", title event FROM event_images eimg
         JOIN users u on eimg.userID = u.userID
         JOIN events ev ON eimg.eventID = ev.eventID
-        WHERE ev.staff = $1 AND eimg.status = $2;
+        WHERE ev.staff = $1 AND eimg.status = $2
+        ORDER BY uploadedAt DESC;
         `;
         
         const results = await executeQuery(query, [staffID, status]);
@@ -79,7 +80,8 @@ export const getEventsImagesForUsers =  async (tableName, userID, style) => {
     try {
 
         const query = `
-        SELECT imageID, url FROM ${tableName} WHERE userID = $1 AND style = $2;
+        SELECT imageID, url FROM ${tableName} WHERE userID = $1 AND style = $2
+        ORDER BY uploadedAt DESC;
         `;
 
         const results = await executeQuery(query, [userID, style]);
