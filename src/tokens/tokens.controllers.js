@@ -8,17 +8,17 @@ export const refreshStaffTokenController = async (req, res) => {
         
         const refreshToken = req.cookies.staffRefreshToken;
         if (!refreshToken) {
-            return res.status(401).json({ Error: "No refresh token provided" });
+            return res.status(401).json({ error: "No refresh token provided" });
         }
 
         const decodedToken = jwt.decode(refreshToken);
         if (!decodedToken) {
-            return res.status(403).json({ Error: "Invalid refresh token" });
+            return res.status(403).json({ error: "Invalid refresh token" });
         }
 
         jwt.verify(refreshToken, config.rsecret, (error, user) => {
             if (error) {
-                return res.status(403).json({ Error: "Session expired. Please re-login" });
+                return res.status(403).json({ error: "Session expired. Please re-login" });
             }
 
             const newAccessToken = aToken({ id: user.id, role: user.role });
@@ -30,7 +30,7 @@ export const refreshStaffTokenController = async (req, res) => {
 
     } catch (error) {
         console.error("Error refreshing token:", error);
-        return res.status(500).json({ Error: "Internal Server Error" });
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
@@ -39,17 +39,17 @@ export const refreshUserTokenController = async (req, res) => {
         
         const refreshToken = req.cookies.userRefreshToken;
         if (!refreshToken) {
-            return res.status(401).json({ Error: "No refresh token provided" });
+            return res.status(401).json({ error: "No refresh token provided" });
         }
 
         const decodedToken = jwt.decode(refreshToken);
         if (!decodedToken) {
-            return res.status(403).json({ Error: "Invalid refresh token" });
+            return res.status(403).json({ error: "Invalid refresh token" });
         }
 
         jwt.verify(refreshToken, config.rsecret, (error, user) => {
             if (error) {
-                return res.status(403).json({ Error: "Session expired. Please re-login" });
+                return res.status(403).json({ error: "Session expired. Please re-login" });
             }
 
             const newAccessToken = aToken({ id: user.id, role: user.role });
@@ -61,7 +61,7 @@ export const refreshUserTokenController = async (req, res) => {
 
     } catch (error) {
         console.error("Error refreshing token:", error);
-        return res.status(500).json({ Error: "Internal Server Error" });
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
@@ -71,7 +71,7 @@ export const logoutStaffController = async (req, res) => {
 
         if (!loggedInStaff) {
             return res.status(401).json({
-                Error: "Unauthorized"
+                error: "Unauthorized"
             });
         }
 
@@ -90,7 +90,7 @@ export const logoutStaffController = async (req, res) => {
         console.error("Error logging out staff", error);
 
         return res.status(400).json({
-            Error: "Error logging out staff"
+            error: "Error logging out staff"
         });
     }
 };
@@ -101,7 +101,7 @@ export const logoutUserController = async (req, res) => {
 
         if (!loggedInStaff) {
             return res.status(401).json({
-                Error: "Unauthorized"
+                error: "Unauthorized"
             });
         }
 
@@ -120,7 +120,7 @@ export const logoutUserController = async (req, res) => {
         console.error("Error logging out user", error);
 
         return res.status(400).json({
-            Error: "Error logging out user"
+            error: "Error logging out user"
         });
     }
 };

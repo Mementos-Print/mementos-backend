@@ -53,7 +53,7 @@ export const staffAuth = async (req, res, next) => {
         console.error("Internal server error: staff auth", error);
 
         return res.status(500).json({
-            Error: "Internal server error."
+            error: "Internal server error."
         });
         
     }
@@ -77,7 +77,7 @@ export const adminAuth = async (req, res, next) => {
         console.error("Internal server error: admin auth", error);
 
         return res.status(500).json({
-            Error: "Internal server error."
+            error: "Internal server error."
         });
         
     }
@@ -102,7 +102,7 @@ export const eventAuth = async (req, res, next) => {
         console.error("Internal server error: event auth", error);
 
         return res.status(500).json({
-            Error: "Internal server error."
+            error: "Internal server error."
         });
         
     }

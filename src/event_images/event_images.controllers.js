@@ -71,11 +71,11 @@ export const uploadEventImagesControler = async (req, res) => {
     const style = req.query.style;
     const borderColor = req.query.border;
 
-    if(!eventCode) return res.status(400).json({Error: "Event code is required"});
+    if(!eventCode) return res.status(400).json({error: "Event code is required"});
 
     const eventExists = await getEventsByID('events', 'eventid', eventCode);
 
-    if ( eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found. Kindly check the event code and try again"});
+    if ( eventExists.rows.length === 0) return res.status(404).json({error: "Event not found. Kindly check the event code and try again"});
     
     const customBorder = await getCustomBorder(eventCode);
 
@@ -111,7 +111,7 @@ export const uploadEventImagesControler = async (req, res) => {
               })
             );
 
-            await uploadEventImagesToDB(processedImages, style, eventCode, loggedIn.id);
+            await uploadEventImagesToDB('event_images', processedImages, style, eventCode, loggedIn.id);
             res.status(201).json({Photos: processedImages});
             await Promise.all(
               processedImages.map(({outPath}) => {
@@ -129,6 +129,11 @@ export const uploadEventImagesControler = async (req, res) => {
             const processedImages = await Promise.all(
               files.map(file => processEventMementoV(file.buffer, borderColor, customBorder))
             );
+
+            // save single images to DB to display on users dashboard
+            const uploadResult = await saveToCloud(processedImages);
+            const { public_id, secure_url } = Array.isArray(uploadResult) ? uploadResult[0] : uploadResult;
+            await uploadEventImagesToDB('event_user_mementoV', uploadResult, style, eventCode, loggedIn.id);
       
             const combinedImages = await combineEventMementoV(processedImages);
       
@@ -143,7 +148,7 @@ export const uploadEventImagesControler = async (req, res) => {
               })
             );
       
-            await uploadEventImagesToDB(uploadedImages, style, eventCode, loggedIn.id);
+            await uploadEventImagesToDB('event_images', uploadedImages, style, eventCode, loggedIn.id);
             res.status(201).json({ photos: uploadedImages });
       
             await Promise.all(
@@ -159,7 +164,7 @@ export const uploadEventImagesControler = async (req, res) => {
 
     console.error("Error uploading event images", error);
     
-    return res.status(500).json({Error: "Internal Server Error"});
+    return res.status(500).json({error: "Internal Server Error"});
     
   }
 };
@@ -171,7 +176,7 @@ export const getUploadedEventImagesForAdminController = async (req, res) => {
 
         if(!loggedInStaff) {
             return res.status(401).json({
-                Error: "Unauthorized."
+                error: "Unauthorized."
             })
         };
 
@@ -205,7 +210,7 @@ export const getUploadedEventImagesForAdminController = async (req, res) => {
         console.error("Error", error);
         
         return res.status(400).json({
-            Error: "Error fetching uploaded images"
+            error: "Error fetching uploaded images"
         });
         
         

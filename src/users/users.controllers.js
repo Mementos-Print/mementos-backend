@@ -45,7 +45,7 @@ export const loginUserController = async (req, res) => {
         const { error, value } = loginUserSchema.validate(req.body);
 
         if (error) {
-            return res.status(400).json({ Error: error.message });
+            return res.status(400).json({ error: error.message });
         }
         const { email, password } = value;
         const user = await findUserByEmail(email);
@@ -81,7 +81,7 @@ export const loginUserController = async (req, res) => {
 
     } catch (error) {
         console.log("Error logging in:", error);
-        return res.status(500).json({ Error: "Internal Server Error" });
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 };
 

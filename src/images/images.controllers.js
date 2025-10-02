@@ -109,7 +109,7 @@ export const getUploadedImagesForAdminController = async (req, res) => {
 
         if(!loggedInUser) {
             return res.status(401).json({
-                Error: "Unauthorized."
+                error: "Unauthorized."
             })
         };
 
@@ -157,14 +157,15 @@ export const getUploadedImagesForUsersController = async (req, res) => {
 
         if(!loggedInUser) {
             return res.status(401).json({
-                Error: "Unauthorized."
+                error: "Unauthorized."
             })
         };
         const uploadedImages = await getUploadedImagesForUsers(loggedInUser.id);
-        const eventImages = await getEventsImagesForUsers(loggedInUser.id);
+        const eventImagesS = await getEventsImagesForUsers('event_images', loggedInUser.id, 'mementoS');
+        const eventImagesV = await getEventsImagesForUsers('event_user_mementoV', loggedInUser.id, 'mementoV');
 
         return res.status(200).json({
-            AllImages: [uploadedImages.rows, eventImages.rows]
+            AllImages: [uploadedImages.rows, eventImagesS.rows, eventImagesV.rows]
         });
 
     } catch (error) {
@@ -172,7 +173,7 @@ export const getUploadedImagesForUsersController = async (req, res) => {
         console.error("Error", error);
         
         return res.status(400).json({
-            Error: "Error fetching uploaded images"
+            error: "Error fetching uploaded images"
         });
         
         
@@ -186,7 +187,7 @@ export const deleteImagesController = async (req, res) => {
 
         if(!user) {
             return res.status(401).json({
-                Error: "Unauthorized"
+                error: "Unauthorized"
             })
         };
 
@@ -194,7 +195,7 @@ export const deleteImagesController = async (req, res) => {
 
         if (error) {
             return res.status(400).json({
-                Error: error.message
+                error: error.message
             });
         };
 
@@ -206,7 +207,7 @@ export const deleteImagesController = async (req, res) => {
 
         if(images.rows.length === 0) {
             return res.status(404).json({
-                Error: "Image(s) not found"
+                error: "Image(s) not found"
             })
         };
 
@@ -226,7 +227,7 @@ export const deleteImagesController = async (req, res) => {
         console.error("Error deleting images", error);
         
         return res.status(500).json({
-            Error: "Error deleting images"
+            error: "Error deleting images"
         })
         
     }

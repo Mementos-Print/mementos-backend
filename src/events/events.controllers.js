@@ -10,11 +10,11 @@ export const createEventController = async (req, res) => {
 
         const loggedInStaff = req.user;
 
-        if(!loggedInStaff) return res.status(401).json({Error: "Unauthorized"});
+        if(!loggedInStaff) return res.status(401).json({error: "Unauthorized"});
 
         const {error, value} = createEventSchema.validate(req.body);
 
-        if (error) return res.status(400).json({Error: error.message});
+        if (error) return res.status(400).json({error: error.message});
 
         const file = req.files;
         
@@ -59,12 +59,12 @@ export const updateEventController = async (req, res) => {
 
         const loggedInStaff = req.user;
 
-        if(!loggedInStaff) return res.status(401).json({Error: "Unauthorized"});
+        if(!loggedInStaff) return res.status(401).json({error: "Unauthorized"});
 
         const {eventCode} = req.params;
         const {error, value} = updateEventSchema.validate(req.body);
 
-        if (error) return res.status(400).json({Error: error.message});
+        if (error) return res.status(400).json({error: error.message});
         
         const {title, date, status} = value;
         const file = req.files;
@@ -76,7 +76,7 @@ export const updateEventController = async (req, res) => {
 
         const eventExists = await getEventsByID('events', 'eventID', eventCode);
 
-        if (eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found"});
+        if (eventExists.rows.length === 0) return res.status(404).json({error: "Event not found"});
 
         if(staffCreatedEvent.rows[0].staff !== loggedInStaff.id || staffCreatedEvent.rows.length === 0) return res.status(401).json({Error: "Unauthorized"});
 
@@ -93,7 +93,7 @@ export const updateEventController = async (req, res) => {
 
         console.error("Error editing event", error);
         
-        return res.status(500).json({Error: "Internal server error"});
+        return res.status(500).json({error: "Internal server error"});
         
     }
 };
@@ -103,14 +103,14 @@ export const viewEventsController = async (req, res) => {
 
         const loggedIn = req.user;
 
-        if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
+        if(!loggedIn) return res.status(401).json({error: "Unauthorized"});
 
         const eventCode = req.query.eventCode;
 
         if(eventCode) {
             const availableEvents = await getEventsByID("events", "eventID", eventCode);
 
-            if (availableEvents.rows.length === 0) return res.status(404).json({Error: "Event not found"});
+            if (availableEvents.rows.length === 0) return res.status(404).json({error: "Event not found"});
 
             return res.status(200).json({events: availableEvents.rows});
         };
@@ -123,7 +123,7 @@ export const viewEventsController = async (req, res) => {
 
         console.error("Error viewing events", error);
         
-        return res.status(500).json({Error: "Internal server error"});
+        return res.status(500).json({error: "Internal server error"});
         
     }
 };
@@ -133,17 +133,17 @@ export const deleteEventController = async (req, res) => {
 
         const loggedIn = req.user;
 
-        if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
+        if(!loggedIn) return res.status(401).json({error: "Unauthorized"});
 
         const eventCode = req.query.eventCode;
 
-        if(!eventCode) return res.status(400).json({Error: "Event code is required"});
+        if(!eventCode) return res.status(400).json({error: "Event code is required"});
 
         const eventExists = await getEventsByID('events', 'eventID', eventCode);
 
-        if (eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found. Kindly check the event code and try again"});
+        if (eventExists.rows.length === 0) return res.status(404).json({error: "Event not found. Kindly check the event code and try again"});
 
-        if(loggedIn.id !== eventExists.rows[0].staff) return res.status(401).json({Error: "You are not authorized to peeform this action"});
+        if(loggedIn.id !== eventExists.rows[0].staff) return res.status(401).json({error: "You are not authorized to peeform this action"});
 
         await deleteEvent(eventCode);
 
@@ -153,7 +153,7 @@ export const deleteEventController = async (req, res) => {
 
         console.error("Error deleting event", error);
         
-        return res.status(500).json({Error: "Internal server error"});
+        return res.status(500).json({error: "Internal server error"});
         
     }
 };
@@ -163,7 +163,7 @@ export const joinEventsController = async (req, res) => {
 
         const loggedIn = req.user;
 
-        if(!loggedIn) return res.status(401).json({Error: "Unauthorized"});
+        if(!loggedIn) return res.status(401).json({eerror: "Unauthorized"});
 
         const eventCode = req.query.eventCode;
 
@@ -171,7 +171,7 @@ export const joinEventsController = async (req, res) => {
 
         const eventExists = await getEventsByID('events', 'eventID', eventCode);
         
-        if(eventExists.rows.length === 0) return res.status(404).json({Error: "Event not found. Check the code and try again."});
+        if(eventExists.rows.length === 0) return res.status(404).json({error: "Event not found. Check the code and try again."});
 
         const customBorder = await getCustomBorder(eventCode);
 
@@ -198,7 +198,7 @@ export const joinEventsController = async (req, res) => {
 
         console.error("Error joing event", error);
         
-        return res.status(500).json({Error: "Internal server error"});
+        return res.status(500).json({error: "Internal server error"});
         
     }
 };

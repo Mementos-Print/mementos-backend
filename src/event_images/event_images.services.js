@@ -6,12 +6,12 @@ import fs from "fs/promises";
 import axios from "axios";
 
 
-export const uploadEventImages =  async (imageID, url, style, eventID, userID) => {
+export const uploadEventImages =  async (tableName, imageID, url, style, eventID, userID) => {
 
     try {
 
         const query = `
-        INSERT INTO event_images(imageID, url, style, eventID, userID)
+        INSERT INTO ${tableName}(imageID, url, style, eventID, userID)
         VALUES($1, $2, $3, $4, $5);
         `;
 
@@ -25,10 +25,10 @@ export const uploadEventImages =  async (imageID, url, style, eventID, userID) =
     
 };
 
-export const uploadEventImagesToDB = async (uploadResults, style, eventID, userID) => {
+export const uploadEventImagesToDB = async (tableName, uploadResults, style, eventID, userID) => {
     try {
         const savePromises = uploadResults.map(({ public_id, secure_url }) => 
-            uploadEventImages(public_id, secure_url, style, eventID, userID)
+            uploadEventImages(tableName, public_id, secure_url, style, eventID, userID)
         );
 
         await Promise.all(savePromises);
@@ -75,14 +75,14 @@ export const getPendingEventsImagesForAdmin =  async (staffID, status) => {
     }
 };
 
-export const getEventsImagesForUsers =  async (userID) => {
+export const getEventsImagesForUsers =  async (tableName, userID, style) => {
     try {
 
         const query = `
-        SELECT imageID, url FROM event_images WHERE userID = $1;
+        SELECT imageID, url FROM ${tableName} WHERE userID = $1 AND style = $2;
         `;
 
-        const results = await executeQuery(query, [userID]);
+        const results = await executeQuery(query, [userID, style]);
 
         return results;
         

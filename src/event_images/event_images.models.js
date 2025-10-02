@@ -23,6 +23,29 @@ export const createEventsImagesTable = async () => {
     }
 };
 
+export const createUserMementoVTable = async () => {
+    try {
+
+        const query = `
+        CREATE TABLE IF NOT EXISTS event_user_mementoV(
+        imageID VARCHAR(300) PRIMARY KEY,
+        url VARCHAR(300) NOT NULL,
+        style VARCHAR(50),
+        status VARCHAR(100) DEFAULT('pending'),
+        eventID VARCHAR(6) NOT NULL,
+        userID VARCHAR(300) NOT NULL,
+        FOREIGN KEY(userID) REFERENCES users(userID) ON DELETE CASCADE,
+        FOREIGN KEY(eventID) REFERENCES events(eventID) ON DELETE CASCADE
+        );
+        `;
+
+        await executeQuery(query, []);
+        
+    } catch (error) {
+        console.error("Error creating Events Images table", error);
+    }
+};
+
 export const createCustomBordeTable = async () => {
     try {
 

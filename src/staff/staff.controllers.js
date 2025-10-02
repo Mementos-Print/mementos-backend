@@ -18,7 +18,7 @@ export const signUpStaffController = async(req, res) => {
 
         if (error) {
             return res.status(400).json({
-                Error: error.message
+                error: error.message
             });
         };
 
@@ -46,7 +46,7 @@ export const signUpStaffController = async(req, res) => {
         console.error("Error signing up staff", error);
         
         return res.status(400).json({
-            Error: "Error signing up staff."
+            error: "Error signing up staff."
         })
         
     }
@@ -57,7 +57,7 @@ export const loginStaffController = async (req, res) => {
         const { error, value } = loginStaffSchema.validate(req.body);
 
         if (error) {
-            return res.status(400).json({ Error: error.message });
+            return res.status(400).json({ error: error.message });
         }
 
         const { email, password } = value;
@@ -66,7 +66,7 @@ export const loginStaffController = async (req, res) => {
 
         if (staff.rows.length === 0) {
             return res.status(404).json({
-                Error: "Account not found. Kindly create an account to login.",
+                error: "Account not found. Kindly create an account to login.",
             });
         };
 
@@ -74,7 +74,7 @@ export const loginStaffController = async (req, res) => {
 
         if(!isMatch) {
             return res.status(401).json({
-                Error: "Invalid credentials!"
+                error: "Invalid credentials!"
             })
         };
 
@@ -111,7 +111,7 @@ export const loginStaffController = async (req, res) => {
         });
     } catch (error) {
         console.log("Error logging in:", error);
-        return res.status(500).json({ Error: "Internal Server Error" });
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
@@ -132,7 +132,7 @@ export const generateResetPasswordOtpController = async (req, res) => {
 
         if(staffExists.rows.length === 0) {
             return res.status(404).json({
-                Error: "Account doesn't exist!"
+                error: "Account doesn't exist!"
             });
         };
 
@@ -195,7 +195,7 @@ export const verifyResetPasswordOtpController = async (req, res) => {
         console.error("Error verifying OTP and resetting password", error);
         
         return res.status(500).json({
-            Error: "Error verifying OTP and resetting password"
+            error: "Error verifying OTP and resetting password"
         });
         
     }
@@ -208,7 +208,7 @@ export const updateStaffRoleController = async (req, res) => {
 
         if(!admin){
             return res.status(401).json({
-                Error: "Unauthorized"
+                error: "Unauthorized"
             })
         };
 
@@ -216,7 +216,7 @@ export const updateStaffRoleController = async (req, res) => {
 
         if(error){
             return res.status(400).json({
-                Error: error.message
+                error: error.message
             })
         };
 
@@ -226,7 +226,7 @@ export const updateStaffRoleController = async (req, res) => {
 
         if(staffExists.rows.length === 0) {
             return res.status(404).json({
-                Error: "Staff not found"
+                error: "Staff not found"
             })
         };
 
@@ -241,7 +241,7 @@ export const updateStaffRoleController = async (req, res) => {
         console.error("Error updating staff role", error);
         
         return res.status(500).json({
-            Error: "Error updating staff role"
+            error: "Error updating staff role"
         });
         
     }
