@@ -7,6 +7,7 @@ export const createEventsImagesTable = async () => {
         CREATE TABLE IF NOT EXISTS event_images(
         imageID VARCHAR(300) PRIMARY KEY,
         url VARCHAR(300) NOT NULL,
+        uploadedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         style VARCHAR(50),
         status VARCHAR(100) DEFAULT('pending'),
         eventID VARCHAR(6) NOT NULL,
@@ -30,6 +31,7 @@ export const createUserMementoVTable = async () => {
         CREATE TABLE IF NOT EXISTS event_user_mementoV(
         imageID VARCHAR(300) PRIMARY KEY,
         url VARCHAR(300) NOT NULL,
+        uploadedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         style VARCHAR(50),
         status VARCHAR(100) DEFAULT('pending'),
         eventID VARCHAR(6) NOT NULL,
