@@ -72,7 +72,7 @@ export const getPendingEventsImagesForAdmin =  async (staffID, status) => {
         return results;
         
     } catch (error) {
-        console.error("Error querying event_images table", error);
+        console.error("Error querying event_images tableez", error);
     }
 };
 

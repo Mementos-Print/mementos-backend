@@ -191,7 +191,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
 
             return res.status(200).json({
                 PendingEventImages: eventImages.rows, 
-                PendindUploadedImageas: uploadedImages.rows
+                PendindUploadedImages: uploadedImages.rows
             });
 
         } else if (filter == 'printed') {
