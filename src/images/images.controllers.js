@@ -107,53 +107,53 @@ export const uploadImagesController = async (req, res) => {
   }
 };
 
-export const getUploadedImagesForAdminController = async (req, res) => {
-    try {
+// export const getUploadedImagesForAdminController = async (req, res) => {
+//     try {
 
-        const loggedInUser = req.user;
+//         const loggedInUser = req.user;
 
-        if(!loggedInUser) {
-            return res.status(401).json({
-                error: "Unauthorized."
-            })
-        };
+//         if(!loggedInUser) {
+//             return res.status(401).json({
+//                 error: "Unauthorized."
+//             })
+//         };
 
-        const filter = req.query.filter;
+//         const filter = req.query.filter;
 
-        if (filter == 'pending') {
+//         if (filter == 'pending') {
 
-            const uploadedImages = await getPendingImagesForAdmin(filter);
+//             const uploadedImages = await getPendingImagesForAdmin(filter);
 
-            return res.status(200).json({
-                PendingImages: uploadedImages.rows
-            });
+//             return res.status(200).json({
+//                 PendingImages: uploadedImages.rows
+//             });
 
-        } else if (filter == 'printed') {
+//         } else if (filter == 'printed') {
 
-            const uploadedImages = await getPendingImagesForAdmin(filter);
+//             const uploadedImages = await getPendingImagesForAdmin(filter);
 
-            return res.status(200).json({
-                PrintedIMages: uploadedImages.rows
-            })
+//             return res.status(200).json({
+//                 PrintedIMages: uploadedImages.rows
+//             })
 
-        } 
-            const uploadedImages = await getUploadedImagesForAdmin();
+//         } 
+//             const uploadedImages = await getUploadedImagesForAdmin();
 
-        return res.status(200).json({
-            AllImages: uploadedImages.rows
-        });
+//         return res.status(200).json({
+//             AllImages: uploadedImages.rows
+//         });
 
-    } catch (error) {
+//     } catch (error) {
 
-        console.error("Error", error);
+//         console.error("Error", error);
         
-        return res.status(400).json({
-            Error: "Error fetching uploaded images"
-        });
+//         return res.status(400).json({
+//             Error: "Error fetching uploaded images"
+//         });
         
         
-    }
-};
+//     }
+// };
 
 export const getUploadedImagesForUsersController = async (req, res) => {
     try {

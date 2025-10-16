@@ -1,4 +1,5 @@
 import { getEventsByID } from "../events/events.services.js";
+import { getPendingImagesForAdmin, getUploadedImagesForAdmin } from "../images/images.services.js";
 import { deleteImagesFromCloud, saveToCloud } from "../middleware/images.js";
 import { combineEventMementoV, getCustomBorder, 
   getEventsImagesForAdmin, 
@@ -168,7 +169,7 @@ export const uploadEventImagesControler = async (req, res) => {
   }
 };
 
-export const getUploadedEventImagesForAdminController = async (req, res) => {
+export const getUploadedEventImagesForStaffController = async (req, res) => {
     try {
 
         const loggedInStaff = req.user;
@@ -181,7 +182,40 @@ export const getUploadedEventImagesForAdminController = async (req, res) => {
 
         const filter = req.query.filter;
 
-        if (filter == 'pending') {
+        if(loggedInStaff.role === 'admin'){
+
+          if (filter == 'pending') {
+
+            const eventImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
+            const uploadedImages = await getPendingImagesForAdmin(filter);
+
+            return res.status(200).json({
+                PendingEventImages: eventImages.rows, 
+                PendindUploadedImageas: uploadedImages.rows
+            });
+
+        } else if (filter == 'printed') {
+
+            const eventImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
+            const uploadedImages = await getPendingImagesForAdmin(filter);
+
+            return res.status(200).json({
+                PrintedEventImages: eventImages.rows,
+                PrintedUploadedImages: uploadedImages
+            })
+
+        } 
+            const eventImages = await getEventsImagesForAdmin(loggedInStaff.id);
+            const uploadedImages = await getUploadedImagesForAdmin();
+
+        return res.status(200).json({
+            AllEventImages: eventImages.rows,
+            AllUploadedImages: uploadedImages
+        });
+
+        } else{
+
+          if (filter == 'pending') {
 
             const uploadedImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
 
@@ -203,6 +237,8 @@ export const getUploadedEventImagesForAdminController = async (req, res) => {
         return res.status(200).json({
             AllImages: uploadedImages.rows
         });
+
+        };
 
     } catch (error) {
 
