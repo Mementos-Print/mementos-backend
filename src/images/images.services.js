@@ -46,15 +46,15 @@ export const getUploadedImagesForAdmin = async() => {
     }
 };
 
-export const getUploadedImagesForUsers = async (userID) => {
+export const getUploadedImagesForUsers = async (tableName, userID, style) => {
     try {
 
         const query = `
-        SELECT imageid, imageurl, uploadedAt FROM images JOIN users USING(userID) WHERE userID = $1
+        SELECT imageid, imageurl, uploadedAt FROM ${tableName} WHERE userID = $1 and style = $2
         ORDER BY uploadedAt DESC;
         `;
 
-        const result = await executeQuery(query, [userID]);
+        const result = await executeQuery(query, [userID, style]);
 
         return result;
         

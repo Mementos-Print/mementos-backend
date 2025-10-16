@@ -165,12 +165,13 @@ export const getUploadedImagesForUsersController = async (req, res) => {
                 error: "Unauthorized."
             })
         };
-        const uploadedImages = await getUploadedImagesForUsers(loggedInUser.id);
+        const uploadedImagesS = await getUploadedImagesForUsers("images", loggedInUser.id, "mementoS");
+        const uploadedImagesV = await getUploadedImagesForUsers("user_mementoV", loggedInUser.id, "mementoV");
         const eventImagesS = await getEventsImagesForUsers('event_images', loggedInUser.id, 'mementoS');
         const eventImagesV = await getEventsImagesForUsers('event_user_mementoV', loggedInUser.id, 'mementoV');
 
         return res.status(200).json({
-            AllImages: [uploadedImages.rows, eventImagesS.rows, eventImagesV.rows]
+            AllImages: [uploadedImagesS.rows, uploadedImagesV.rows, eventImagesS.rows, eventImagesV.rows]
         });
 
     } catch (error) {
