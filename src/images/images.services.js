@@ -1,10 +1,10 @@
 import { executeQuery } from "../config/database.js";
 
-export const uploadImage = async (imageID, imageURL, userID, style) => {
+export const uploadImage = async (tableName, imageID, imageURL, userID, style) => {
     try {
 
         const query = `
-        INSERT INTO images(imageID, imageURL, userID, style)
+        INSERT INTO ${tableName}(imageID, imageURL, userID, style)
         VALUES($1, $2, $3, $4);
         `;
 
@@ -17,10 +17,10 @@ export const uploadImage = async (imageID, imageURL, userID, style) => {
     }
 };
 
-export const uploadImagesToDB = async (uploadResults, userId, style) => {
+export const uploadImagesToDB = async (tableName, uploadResults, userId, style) => {
     try {
         const savePromises = uploadResults.map(({ public_id, secure_url }) => 
-            uploadImage(public_id, secure_url, userId, style)
+            uploadImage(tableName, public_id, secure_url, userId, style)
         );
 
         await Promise.all(savePromises);

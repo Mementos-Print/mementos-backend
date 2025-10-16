@@ -30,9 +30,9 @@ export const uploadImagesController = async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 5MB
     if (files.some(file => file.size > MAX_FILE_SIZE)) {
-      return res.status(400).json({ error: "One or more files exceed 5MB limit" });
+      return res.status(400).json({ error: "One or more files exceed 10MB limit" });
     }
 
     if (style === 'mementoV') {
@@ -44,8 +44,13 @@ export const uploadImagesController = async (req, res) => {
         files.map(file => processEventMementoV(file.buffer, borderColor))
       );
 
+      // save single images to DB to display on users dashboard
+      const uploadResult = await saveToCloud(processedImages);
+      const { public_id, secure_url } = Array.isArray(uploadResult) ? uploadResult[0] : uploadResult;
+      await uploadImagesToDB("user_mementoV", uploadResult, loggedInUser.id, style);
+      
       const combinedImages = await combineEventMementoV(processedImages);
-
+      
       const uploadedImages = await Promise.all(
         combinedImages.map(async (imagePath) => {
           const uploadResults = await saveToCloud(imagePath);
@@ -56,8 +61,8 @@ export const uploadImagesController = async (req, res) => {
           return { public_id, secure_url, imagePath };
         })
       );
-
-      await uploadImagesToDB(uploadedImages, loggedInUser.id, style);
+      
+      await uploadImagesToDB("images", uploadedImages, loggedInUser.id, style);
       res.status(201).json({ photos: uploadedImages });
 
       await Promise.all(

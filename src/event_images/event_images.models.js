@@ -24,7 +24,7 @@ export const createEventsImagesTable = async () => {
     }
 };
 
-export const createUserMementoVTable = async () => {
+export const createEventUserMementoVTable = async () => {
     try {
 
         const query = `

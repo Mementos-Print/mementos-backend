@@ -72,17 +72,8 @@ export const uploadEventImagesControler = async (req, res) => {
     const borderColor = req.query.border;
 
     if(!eventCode) return res.status(400).json({error: "Event code is required"});
-
-    const eventExists = await getEventsByID('events', 'eventid', eventCode);
-
-    if ( eventExists.rows.length === 0) return res.status(404).json({error: "Event not found. Kindly check the event code and try again"});
-    
-    const customBorder = await getCustomBorder(eventCode);
-
-    if(borderColor === 'custom' && customBorder.rows.length === 0) return res.status(404).json({Message: "No custom border available for this event"});
-
     if (!['mementoS', 'mementoV'].includes(style)) return res.status(400).json({ error: 'Invalid style' });
-
+    
     if(!['black', 'white', 'custom'].includes(borderColor)) return res.status(400).json({ error: 'Invalid border' });
 
     const files = req.files;
@@ -94,6 +85,14 @@ export const uploadEventImagesControler = async (req, res) => {
     if (files.some(file => file.size > MAX_FILE_SIZE)) {
       return res.status(400).json({ error: "One or more files exceed 5MB limit" });
     };
+
+    const eventExists = await getEventsByID('events', 'eventid', eventCode);
+
+    if ( eventExists.rows.length === 0) return res.status(404).json({error: "Event not found. Kindly check the event code and try again"});
+    
+    const customBorder = await getCustomBorder(eventCode);
+
+    if(borderColor === 'custom' && customBorder.rows.length === 0) return res.status(404).json({Message: "No custom border available for this event"});
 
     if (style === 'mementoS') {
       const processedImages = await Promise.all(
