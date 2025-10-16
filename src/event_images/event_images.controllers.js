@@ -177,7 +177,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
         if(!loggedInStaff) {
             return res.status(401).json({
                 error: "Unauthorized."
-            })
+            });
         };
 
         const filter = req.query.filter;
@@ -201,8 +201,8 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
 
             return res.status(200).json({
                 PrintedEventImages: eventImages.rows,
-                PrintedUploadedImages: uploadedImages
-            })
+                PrintedUploadedImages: uploadedImages.rows
+            });
 
         } 
             const eventImages = await getEventsImagesForAdmin(loggedInStaff.id);
@@ -210,7 +210,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
 
         return res.status(200).json({
             AllEventImages: eventImages.rows,
-            AllUploadedImages: uploadedImages
+            AllUploadedImages: uploadedImages.rows
         });
 
         } else{
@@ -220,7 +220,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
             const uploadedImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
 
             return res.status(200).json({
-                PendingImages: uploadedImages.rows
+                PendingEventImages: uploadedImages.rows
             });
 
         } else if (filter == 'printed') {
@@ -228,14 +228,14 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
             const uploadedImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
 
             return res.status(200).json({
-                PrintedImages: uploadedImages.rows
-            })
+                PrintedEventImages: uploadedImages.rows
+            });
 
         } 
             const uploadedImages = await getEventsImagesForAdmin(loggedInStaff.id);
 
         return res.status(200).json({
-            AllImages: uploadedImages.rows
+            AllEventImages: uploadedImages.rows
         });
 
         };
