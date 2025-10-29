@@ -80,7 +80,7 @@ export const getEventsImagesForUsers =  async (tableName, userID, style) => {
     try {
 
         const query = `
-        SELECT imageID, url FROM ${tableName} WHERE userID = $1 AND style = $2
+        SELECT imageID, url imageurl FROM ${tableName} WHERE userID = $1 AND style = $2
         ORDER BY uploadedAt DESC;
         `;
 
