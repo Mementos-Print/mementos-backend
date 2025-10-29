@@ -28,5 +28,6 @@ export const config = {
     googleClientID: process.env.CLIENT_ID,
     googleClientSecret: process.env.CLIENT_SECRET,
     userCallBackURI: process.env.CALLBACK_URI_USER,
-    staffCallbackURI: process.env.CALLBACK_URI_STAFF
+    staffCallbackURI: process.env.CALLBACK_URI_STAFF,
+    frontendURI: process.env.FRONTENDURI
 };

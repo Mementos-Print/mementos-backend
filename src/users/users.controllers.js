@@ -105,11 +105,15 @@ export const loginUserWithGoogleCallbackController = (req, res) => {
     
     res.cookie("userRefreshToken", refreshToken, cookieOptions);
 
-    return res.status(200).json({
-        Message: "User logged in successfully!",
-        accessToken,
-        name: req.user.name
-    });
+    const redirectURL = `${config.frontendURI}/auth/success?access=${accessToken}&name=${encodeURIComponent(req.user.name)}`;
+
+    return res.redirect(redirectURL);
+
+    // return res.status(200).json({
+    //     Message: "User logged in successfully!",
+    //     accessToken,
+    //     name: req.user.name
+    // });
     } catch (error) {
         console.log("Error logging in user with google", error);
         return res.status(500).json({Message: "Error logging in user with google"});
