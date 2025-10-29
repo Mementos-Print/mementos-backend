@@ -107,54 +107,6 @@ export const uploadImagesController = async (req, res) => {
   }
 };
 
-// export const getUploadedImagesForAdminController = async (req, res) => {
-//     try {
-
-//         const loggedInUser = req.user;
-
-//         if(!loggedInUser) {
-//             return res.status(401).json({
-//                 error: "Unauthorized."
-//             })
-//         };
-
-//         const filter = req.query.filter;
-
-//         if (filter == 'pending') {
-
-//             const uploadedImages = await getPendingImagesForAdmin(filter);
-
-//             return res.status(200).json({
-//                 PendingImages: uploadedImages.rows
-//             });
-
-//         } else if (filter == 'printed') {
-
-//             const uploadedImages = await getPendingImagesForAdmin(filter);
-
-//             return res.status(200).json({
-//                 PrintedIMages: uploadedImages.rows
-//             })
-
-//         } 
-//             const uploadedImages = await getUploadedImagesForAdmin();
-
-//         return res.status(200).json({
-//             AllImages: uploadedImages.rows
-//         });
-
-//     } catch (error) {
-
-//         console.error("Error", error);
-        
-//         return res.status(400).json({
-//             Error: "Error fetching uploaded images"
-//         });
-        
-        
-//     }
-// };
-
 export const getUploadedImagesForUsersController = async (req, res) => {
     try {
 
@@ -165,16 +117,16 @@ export const getUploadedImagesForUsersController = async (req, res) => {
                 error: "Unauthorized."
             })
         };
-        const uploadedImagesS = await getUploadedImagesForUsers("images", loggedInUser.id, "mementoS");
+        // const uploadedImagesS = await getUploadedImagesForUsers("images", loggedInUser.id, "mementoS");
         const uploadedImagesV = await getUploadedImagesForUsers("user_mementoV", loggedInUser.id, "mementoV");
-        const eventImagesS = await getEventsImagesForUsers('event_images', loggedInUser.id, 'mementoS');
+        // const eventImagesS = await getEventsImagesForUsers('event_images', loggedInUser.id, 'mementoS');
         const eventImagesV = await getEventsImagesForUsers('event_user_mementoV', loggedInUser.id, 'mementoV');
 
         return res.status(200).json({
-            AllImages: [uploadedImagesS.rows, uploadedImagesV.rows, eventImagesS.rows, eventImagesV.rows]
+            AllImages: [uploadedImagesV.rows, eventImagesV.rows]
         });
 
-    } catch (error) {
+      } catch (error) {
 
         console.error("Error", error);
         
@@ -204,7 +156,7 @@ export const deleteImagesController = async (req, res) => {
                 error: error.message
             });
         };
-
+        
         const {imageID} = value;
 
         // Ensure imageID is an array for consistency
@@ -214,7 +166,7 @@ export const deleteImagesController = async (req, res) => {
         if(images.rows.length === 0) {
             return res.status(404).json({
                 error: "Image(s) not found"
-            })
+              })
         };
 
         // Extract imageIDs from DB response
@@ -229,7 +181,7 @@ export const deleteImagesController = async (req, res) => {
         })
         
     } catch (error) {
-
+      
         console.error("Error deleting images", error);
         
         return res.status(500).json({
@@ -238,3 +190,51 @@ export const deleteImagesController = async (req, res) => {
         
     }
 };
+
+      // export const getUploadedImagesForAdminController = async (req, res) => {
+      //     try {
+      
+      //         const loggedInUser = req.user;
+      
+      //         if(!loggedInUser) {
+      //             return res.status(401).json({
+      //                 error: "Unauthorized."
+      //             })
+      //         };
+      
+      //         const filter = req.query.filter;
+      
+      //         if (filter == 'pending') {
+      
+      //             const uploadedImages = await getPendingImagesForAdmin(filter);
+      
+      //             return res.status(200).json({
+      //                 PendingImages: uploadedImages.rows
+      //             });
+      
+      //         } else if (filter == 'printed') {
+      
+      //             const uploadedImages = await getPendingImagesForAdmin(filter);
+      
+      //             return res.status(200).json({
+      //                 PrintedIMages: uploadedImages.rows
+      //             })
+      
+      //         } 
+      //             const uploadedImages = await getUploadedImagesForAdmin();
+      
+      //         return res.status(200).json({
+      //             AllImages: uploadedImages.rows
+      //         });
+      
+      //     } catch (error) {
+      
+      //         console.error("Error", error);
+              
+      //         return res.status(400).json({
+      //             Error: "Error fetching uploaded images"
+      //         });
+              
+              
+      //     }
+      // };
