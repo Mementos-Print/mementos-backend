@@ -105,7 +105,7 @@ export const loginUserWithGoogleCallbackController = (req, res) => {
     
     res.cookie("userRefreshToken", refreshToken, cookieOptions);
 
-    const redirectURL = `${config.frontendURI}/auth/success?access=${accessToken}&name=${encodeURIComponent(req.user.name)}`;
+    const redirectURL = `${config.frontendURI}?accessToken=${accessToken}&name=${encodeURIComponent(req.user.name)}`;
 
     return res.redirect(redirectURL);
 
