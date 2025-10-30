@@ -324,8 +324,10 @@ export const processEventMementoV = async (fileBuffer, borderColor, customBorder
 
             image = base.composite([{
                 input: image,
+                bottom: 50,
                 top: 50,
-                left: 145
+                right: 145,
+                left: 50
             }])
 
             await image.toFile(outPath);
@@ -369,8 +371,10 @@ export const processEventMementoV = async (fileBuffer, borderColor, customBorder
 
             image = base.composite([{
                 input: image,
+                right:50,
                 left: 50,
-                top: 50,
+                bottom: 50,
+                top: 145,
             }])
 
             await image.toFile(outPath);
