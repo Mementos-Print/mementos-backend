@@ -333,7 +333,7 @@ export const processEventMementoV = async (fileBuffer, borderColor, customBorder
             await image.toFile(outPath);
             return outPath;
 
-        } else if (width < height){
+        } else {
             finalWidth = 800;
             finalHeight = 1005;
             borderSize = 50;
