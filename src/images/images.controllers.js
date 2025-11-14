@@ -123,7 +123,7 @@ export const getUploadedImagesForUsersController = async (req, res) => {
         const eventImagesV = await getEventsImagesForUsers('event_user_mementoV', loggedInUser.id, 'mementoV');
 
         return res.status(200).json({
-            AllImages: [uploadedImagesV.rows, eventImagesV.rows]
+            AllImages: [...uploadedImagesV.rows, ...eventImagesV.rows]
         });
 
       } catch (error) {

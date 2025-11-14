@@ -33,7 +33,7 @@ export const getUploadedImagesForAdmin = async() => {
     try {
 
         const query = `
-        SELECT imageid, imageurl, name "uploaderName" FROM images JOIN users USING(userid)
+        SELECT imageid, imageurl, name "uploaderName", uploadedAt FROM images JOIN users USING(userid)
         ORDER BY uploadedAt DESC;
         `;
 
@@ -67,7 +67,7 @@ export const getPendingImagesForAdmin = async(status) => {
     try {
 
         const query = `
-        SELECT imageid, imageurl, name "uploaderName" FROM images JOIN users USING(userid) 
+        SELECT imageid, imageurl, name "uploaderName", uploadedAt FROM images JOIN users USING(userid) 
         WHERE status = $1 ORDER BY uploadedAt DESC;
         `;
 

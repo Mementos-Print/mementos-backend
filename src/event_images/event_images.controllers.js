@@ -190,8 +190,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
             const uploadedImages = await getPendingImagesForAdmin(filter);
 
             return res.status(200).json({
-                PendingEventImages: eventImages.rows, 
-                PendindUploadedImages: uploadedImages.rows
+              PendingImages: [...eventImages.rows, ...uploadedImages.rows]
             });
 
         } else if (filter == 'printed') {
@@ -200,8 +199,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
             const uploadedImages = await getPendingImagesForAdmin(filter);
 
             return res.status(200).json({
-                PrintedEventImages: eventImages.rows,
-                PrintedUploadedImages: uploadedImages.rows
+                PrintedImages: [...eventImages.rows, ...uploadedImages.rows]
             });
 
         } 
@@ -209,8 +207,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
             const uploadedImages = await getUploadedImagesForAdmin();
 
         return res.status(200).json({
-            AllEventImages: eventImages.rows,
-            AllUploadedImages: uploadedImages.rows
+            AllImages: [...eventImages.rows, ...uploadedImages.rows]
         });
 
         } else{
