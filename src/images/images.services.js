@@ -33,7 +33,7 @@ export const getUploadedImagesForAdmin = async() => {
     try {
 
         const query = `
-        SELECT imageid, imageurl, name FROM images JOIN users USING(userid)
+        SELECT imageid, imageurl, name "uploaderName" FROM images JOIN users USING(userid)
         ORDER BY uploadedAt DESC;
         `;
 
