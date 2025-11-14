@@ -283,109 +283,110 @@ export const processEventMementoV = async (fileBuffer, borderColor, customBorder
         const metadata = await image.metadata();
         const { width, height } = metadata;
 
-        let finalWidth, finalHeight, borderSize, base, bottomBorder, leftBorder;
+        let finalWidth, finalHeight, base;
 
-        if( width > height) {
+        // Rounded corner radius
+        const radius = 50; // adjust to taste
+
+        if (width > height) {
+            // ---------- LANDSCAPE ----------
             finalWidth = 705;
             finalHeight = 1100;
-            borderSize = 50;
-            leftBorder = 145;
 
-            image = image.rotate(90)
-            .resize({
+            // resize
+            image = image.rotate(90).resize({
                 width: finalWidth,
                 height: finalHeight,
                 fit: 'fill'
-            })
-
-            image = await image.toBuffer();
-
-            if (borderColor === 'custom') {
-                const response = await axios.get(customBorder.rows[0].url, { responseType: 'arraybuffer' });
-                const customBorderBuffer = Buffer.from(response.data, 'binary');
-                base = sharp(customBorderBuffer)
-                .resize({
-                    width: 900,
-                    height: 1200,
-                    fit: 'fill'
-                });
-            } else {
-                const color = borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
-            
-                base = sharp({
-                    create: {
-                        width: 900,
-                        height: 1200,
-                        channels: 3,
-                        background: color
-                    }
-                });
-            }
-
-            image = base.composite([{
-                input: image,
-                bottom: 50,
-                top: 50,
-                right: 145,
-                left: 50
-            }])
-
-            await image.toFile(outPath);
-            return outPath;
+            });
 
         } else {
+            // ---------- PORTRAIT ----------
             finalWidth = 800;
             finalHeight = 1005;
-            borderSize = 50;
-            bottomBorder = 145;
 
             image = image.resize({
                 width: finalWidth,
                 height: finalHeight,
                 fit: 'fill'
-            })
+            });
+        }
 
-            image = await image.toBuffer();
+        // Convert resized image to buffer
+        const resizedBuffer = await image.toBuffer();
 
-            if (borderColor === 'custom') {
-                const response = await axios.get(customBorder.rows[0].url, { responseType: 'arraybuffer' });
-                const customBorderBuffer = Buffer.from(response.data, 'binary');
-                base = sharp(customBorderBuffer)
-                .resize({
+        // ---------- CREATE ROUNDED CORNER MASK ----------
+        const roundedMask = Buffer.from(`
+            <svg width="${finalWidth}" height="${finalHeight}">
+                <rect x="0" y="0" width="${finalWidth}" height="${finalHeight}" rx="${radius}" ry="${radius}" />
+            </svg>
+        `);
+
+        // Apply rounded corners
+        const roundedImage = await sharp(resizedBuffer)
+            .composite([
+                { input: roundedMask, blend: "dest-in" }
+            ])
+            .png()
+            .toBuffer();
+
+        // ---------- CREATE BORDER BASE ----------
+        if (borderColor === 'custom') {
+            const response = await axios.get(customBorder.rows[0].url, { responseType: 'arraybuffer' });
+            const customBorderBuffer = Buffer.from(response.data, 'binary');
+
+            base = sharp(customBorderBuffer).resize({
+                width: 900,
+                height: 1200,
+                fit: 'fill'
+            });
+
+        } else {
+            const color = borderColor === 'black'
+                ? { r: 0, g: 0, b: 0 }
+                : { r: 255, g: 255, b: 255 };
+
+            base = sharp({
+                create: {
                     width: 900,
                     height: 1200,
-                    fit: 'fill'
-                });
-            } else {
-                const color = borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
-            
-                base = sharp({
-                    create: {
-                        width: 900,
-                        height: 1200,
-                        channels: 3,
-                        background: color
-                    }
-                });
-            }
+                    channels: 3,
+                    background: color
+                }
+            });
+        }
 
-            image = base.composite([{
-                input: image,
-                right:50,
+        // ---------- COMPOSITE ROUNDED IMAGE ON BORDER ----------
+        let compositeOptions;
+
+        if (width > height) {
+            // LANDSCAPE placement
+            compositeOptions = {
+                input: roundedImage,
+                bottom: 50,
+                top: 50,
+                right: 145,
+                left: 50
+            };
+        } else {
+            // PORTRAIT placement
+            compositeOptions = {
+                input: roundedImage,
+                right: 50,
                 left: 50,
                 bottom: 50,
-                top: 145,
-            }])
+                top: 145
+            };
+        }
 
-            await image.toFile(outPath);
-            return outPath;
+        await base.composite([compositeOptions]).toFile(outPath);
+        return outPath;
 
-        };
-        
     } catch (error) {
         console.error("Error processing event polaroids", error);
     }
 };
+
 
 export const processEventBorders = async (fileBuffer) => {
 
@@ -480,3 +481,116 @@ export const combineEventMementoV = async (imagePaths) => {
     }
 
 };
+
+// export const processEventMementoV = async (fileBuffer, borderColor, customBorder) => {
+//     try {
+
+//         const outPath = await generateOutpath();
+
+//         let image = sharp(fileBuffer);
+//         const metadata = await image.metadata();
+//         const { width, height } = metadata;
+
+//         let finalWidth, finalHeight, borderSize, base, bottomBorder, leftBorder;
+
+//         if( width > height) {
+//             finalWidth = 705;
+//             finalHeight = 1100;
+//             borderSize = 50;
+//             leftBorder = 145;
+
+//             image = image.rotate(90)
+//             .resize({
+//                 width: finalWidth,
+//                 height: finalHeight,
+//                 fit: 'fill'
+//             })
+
+//             image = await image.toBuffer();
+
+//             if (borderColor === 'custom') {
+//                 const response = await axios.get(customBorder.rows[0].url, { responseType: 'arraybuffer' });
+//                 const customBorderBuffer = Buffer.from(response.data, 'binary');
+//                 base = sharp(customBorderBuffer)
+//                 .resize({
+//                     width: 900,
+//                     height: 1200,
+//                     fit: 'fill'
+//                 });
+//             } else {
+//                 const color = borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+            
+//                 base = sharp({
+//                     create: {
+//                         width: 900,
+//                         height: 1200,
+//                         channels: 3,
+//                         background: color
+//                     }
+//                 });
+//             }
+
+//             image = base.composite([{
+//                 input: image,
+//                 bottom: 50,
+//                 top: 50,
+//                 right: 145,
+//                 left: 50
+//             }])
+
+//             await image.toFile(outPath);
+//             return outPath;
+
+//         } else {
+//             finalWidth = 800;
+//             finalHeight = 1005;
+//             borderSize = 50;
+//             bottomBorder = 145;
+
+//             image = image.resize({
+//                 width: finalWidth,
+//                 height: finalHeight,
+//                 fit: 'fill'
+//             })
+
+//             image = await image.toBuffer();
+
+//             if (borderColor === 'custom') {
+//                 const response = await axios.get(customBorder.rows[0].url, { responseType: 'arraybuffer' });
+//                 const customBorderBuffer = Buffer.from(response.data, 'binary');
+//                 base = sharp(customBorderBuffer)
+//                 .resize({
+//                     width: 900,
+//                     height: 1200,
+//                     fit: 'fill'
+//                 });
+//             } else {
+//                 const color = borderColor === 'black' ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+            
+//                 base = sharp({
+//                     create: {
+//                         width: 900,
+//                         height: 1200,
+//                         channels: 3,
+//                         background: color
+//                     }
+//                 });
+//             }
+
+//             image = base.composite([{
+//                 input: image,
+//                 right:50,
+//                 left: 50,
+//                 bottom: 50,
+//                 top: 145,
+//             }])
+
+//             await image.toFile(outPath);
+//             return outPath;
+
+//         };
+        
+//     } catch (error) {
+//         console.error("Error processing event polaroids", error);
+//     }
+// };
