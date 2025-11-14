@@ -41,7 +41,7 @@ export const getEventsImagesForAdmin =  async (staffID) => {
     try {
 
         const query = `
-        SELECT imageID, url, name "uploaderName", title event FROM event_images eimg
+        SELECT imageID, url imageurl, name "uploaderName", title event FROM event_images eimg
         JOIN users u on eimg.userID = u.userID
         JOIN events ev ON eimg.eventID = ev.eventID
         WHERE ev.staff = $1;
