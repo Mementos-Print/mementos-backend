@@ -1,11 +1,10 @@
 import { deleteImagesFromCloud, saveToCloud } from "../middleware/images.js";
 import fs from "fs/promises";
-import { uploadImagesToDB, getPendingImagesForAdmin,
-    getUploadedImagesForAdmin, getImagesById,
-    deleteImages, getUploadedImagesForUsers
-    } from "./images.services.js";
+import * as IS from "./images.services.js";
 import { deleteImagesSchema } from "../validators/images.js";
-import { combineEventMementoV, getEventsImagesForUsers, processEventMementoS, processEventMementoV } from "../event_images/event_images.services.js";
+import { getEventsImagesForUsers } from "../event_images/event_images.services.js";
+import { combineEventMementoV, processEventMementoV } from "../event_images/event.mementoV.js";
+import { processEventMementoS } from "../event_images/event.mementoS.js";
 
 
 export const uploadImagesController = async (req, res) => {
@@ -47,7 +46,7 @@ export const uploadImagesController = async (req, res) => {
       // save single images to DB to display on users dashboard
       const uploadResult = await saveToCloud(processedImages);
       const { public_id, secure_url } = Array.isArray(uploadResult) ? uploadResult[0] : uploadResult;
-      await uploadImagesToDB("user_mementoV", uploadResult, loggedInUser.id, style);
+      await IS.uploadImagesToDB("user_mementoV", uploadResult, loggedInUser.id, style);
       
       const combinedImages = await combineEventMementoV(processedImages);
       
@@ -62,9 +61,9 @@ export const uploadImagesController = async (req, res) => {
         })
       );
       
-      await uploadImagesToDB("images", uploadedImages, loggedInUser.id, style);
+      await IS.uploadImagesToDB("images", uploadedImages, loggedInUser.id, style);
       res.status(201).json({ photos: uploadedImages });
-
+      
       await Promise.all(
         [...processedImages, ...combinedImages].map(outPath =>
           fs.unlink(outPath).catch(err =>
@@ -72,7 +71,7 @@ export const uploadImagesController = async (req, res) => {
           )
         )
       );
-
+      
     } else {
       const processedImages = await Promise.all(
         files.map(async (file) => {
@@ -89,7 +88,7 @@ export const uploadImagesController = async (req, res) => {
         })
       );
 
-      await uploadImagesToDB(processedImages, loggedInUser.id, style);
+      await IS.uploadImagesToDB('images', processedImages, loggedInUser.id, style);
       res.status(201).json({ photos: processedImages });
 
       await Promise.all(
@@ -118,7 +117,7 @@ export const getUploadedImagesForUsersController = async (req, res) => {
             })
         };
         // const uploadedImagesS = await getUploadedImagesForUsers("images", loggedInUser.id, "mementoS");
-        const uploadedImagesV = await getUploadedImagesForUsers("user_mementoV", loggedInUser.id, "mementoV");
+        const uploadedImagesV = await IS.getUploadedImagesForUsers("user_mementoV", loggedInUser.id, "mementoV");
         // const eventImagesS = await getEventsImagesForUsers('event_images', loggedInUser.id, 'mementoS');
         const eventImagesV = await getEventsImagesForUsers('event_user_mementoV', loggedInUser.id, 'mementoV');
 
@@ -161,7 +160,7 @@ export const deleteImagesController = async (req, res) => {
 
         // Ensure imageID is an array for consistency
         const imageIDs = Array.isArray(imageID) ? imageID : [imageID];
-        const images = await getImagesById(imageIDs);
+        const images = await IS.getImagesById(imageIDs);
 
         if(images.rows.length === 0) {
             return res.status(404).json({
@@ -174,7 +173,7 @@ export const deleteImagesController = async (req, res) => {
 
         await deleteImagesFromCloud(idsToDelete);
 
-        await deleteImages(idsToDelete);
+        await IS.deleteImages(idsToDelete);
 
         return res.status(200).json({
             Message: "Picture(s) deleted successfully"
@@ -190,51 +189,3 @@ export const deleteImagesController = async (req, res) => {
         
     }
 };
-
-      // export const getUploadedImagesForAdminController = async (req, res) => {
-      //     try {
-      
-      //         const loggedInUser = req.user;
-      
-      //         if(!loggedInUser) {
-      //             return res.status(401).json({
-      //                 error: "Unauthorized."
-      //             })
-      //         };
-      
-      //         const filter = req.query.filter;
-      
-      //         if (filter == 'pending') {
-      
-      //             const uploadedImages = await getPendingImagesForAdmin(filter);
-      
-      //             return res.status(200).json({
-      //                 PendingImages: uploadedImages.rows
-      //             });
-      
-      //         } else if (filter == 'printed') {
-      
-      //             const uploadedImages = await getPendingImagesForAdmin(filter);
-      
-      //             return res.status(200).json({
-      //                 PrintedIMages: uploadedImages.rows
-      //             })
-      
-      //         } 
-      //             const uploadedImages = await getUploadedImagesForAdmin();
-      
-      //         return res.status(200).json({
-      //             AllImages: uploadedImages.rows
-      //         });
-      
-      //     } catch (error) {
-      
-      //         console.error("Error", error);
-              
-      //         return res.status(400).json({
-      //             Error: "Error fetching uploaded images"
-      //         });
-              
-              
-      //     }
-      // };

@@ -1,14 +1,10 @@
 import { getEventsByID } from "../events/events.services.js";
 import { getPendingImagesForAdmin, getUploadedImagesForAdmin } from "../images/images.services.js";
 import { deleteImagesFromCloud, saveToCloud } from "../middleware/images.js";
-import { combineEventMementoV, getCustomBorder, 
-  getEventsImagesForAdmin, 
-  getPendingEventsImagesForAdmin, 
-  processEventBorders,
-  processEventMementoS,
-  processEventMementoV,
-  updateCustomBorderToDB, uploadCustomBorderToDB, uploadEventImagesToDB 
-  } from "./event_images.services.js";
+import { processEventBorders } from "./event.borders.js";
+import { processEventMementoS } from "./event.mementoS.js";
+import { combineEventMementoV, processEventMementoV } from "./event.mementoV.js";
+import * as EIS from "./event_images.services.js";
 import fs from "fs/promises";
 
 
@@ -39,9 +35,9 @@ export const processEventBorderController = async (files, eventID) => {
       const eventExists = await getEventsByID('custom_borders', 'eventID', eventID);
 
       if (eventExists.rows.length === 0) {
-        await uploadCustomBorderToDB(processedImages, eventID);
+        await EIS.uploadCustomBorderToDB(processedImages, eventID);
       } else {
-        await updateCustomBorderToDB(processedImages, eventID);
+        await EIS.updateCustomBorderToDB(processedImages, eventID);
 
         await deleteImagesFromCloud(eventExists.rows[0].borderid);
       }
@@ -49,7 +45,7 @@ export const processEventBorderController = async (files, eventID) => {
       await Promise.all(
         processedImages.map(({ outPath }) =>
           fs.unlink(outPath).catch(err =>
-            console.warn(`Failed to delete ${outPath}: ${err.message}`)
+            console.warn(`Failed to delete ${outPath}: ${err.message}; event border`)
           )
         )
       );
@@ -91,7 +87,7 @@ export const uploadEventImagesControler = async (req, res) => {
 
     if ( eventExists.rows.length === 0) return res.status(404).json({error: "Event not found. Kindly check the event code and try again"});
     
-    const customBorder = await getCustomBorder(eventCode);
+    const customBorder = await EIS.getCustomBorder(eventCode);
 
     if(borderColor === 'custom' && customBorder.rows.length === 0) return res.status(404).json({Message: "No custom border available for this event"});
 
@@ -111,12 +107,12 @@ export const uploadEventImagesControler = async (req, res) => {
               })
             );
 
-            await uploadEventImagesToDB('event_images', processedImages, style, eventCode, loggedIn.id);
+            await EIS.uploadEventImagesToDB('event_images', processedImages, style, eventCode, loggedIn.id);
             res.status(201).json({Photos: processedImages});
             await Promise.all(
               processedImages.map(({outPath}) => {
                 fs.unlink(outPath).catch(err => 
-                  console.warn(`Failed to delete ${outPath}: ${err.message}`)
+                  console.warn(`Failed to delete ${outPath}: ${err.message}; event mementoS`)
                 )
               })
             )
@@ -133,7 +129,7 @@ export const uploadEventImagesControler = async (req, res) => {
             // save single images to DB to display on users dashboard
             const uploadResult = await saveToCloud(processedImages);
             const { public_id, secure_url } = Array.isArray(uploadResult) ? uploadResult[0] : uploadResult;
-            await uploadEventImagesToDB('event_user_mementoV', uploadResult, style, eventCode, loggedIn.id);
+            await EIS.uploadEventImagesToDB('event_user_mementoV', uploadResult, style, eventCode, loggedIn.id);
       
             const combinedImages = await combineEventMementoV(processedImages);
       
@@ -148,13 +144,13 @@ export const uploadEventImagesControler = async (req, res) => {
               })
             );
       
-            await uploadEventImagesToDB('event_images', uploadedImages, style, eventCode, loggedIn.id);
+            await EIS.uploadEventImagesToDB('event_images', uploadedImages, style, eventCode, loggedIn.id);
             res.status(201).json({ photos: uploadedImages });
       
             await Promise.all(
               [...processedImages, ...combinedImages].map(outPath =>
                 fs.unlink(outPath).catch(err =>
-                  console.warn(`Failed to delete ${outPath}: ${err.message}`)
+                  console.warn(`Failed to delete ${outPath}: ${err.message}; event mementoV`)
                 )
               )
             );
@@ -186,7 +182,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
 
           if (filter == 'pending') {
 
-            const eventImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
+            const eventImages = await EIS.getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
             const uploadedImages = await getPendingImagesForAdmin(filter);
 
             return res.status(200).json({
@@ -195,7 +191,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
 
         } else if (filter == 'printed') {
 
-            const eventImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
+            const eventImages = await EIS.getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
             const uploadedImages = await getPendingImagesForAdmin(filter);
 
             return res.status(200).json({
@@ -203,7 +199,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
             });
 
         } 
-            const eventImages = await getEventsImagesForAdmin(loggedInStaff.id);
+            const eventImages = await EIS.getEventsImagesForAdmin(loggedInStaff.id);
             const uploadedImages = await getUploadedImagesForAdmin();
 
         return res.status(200).json({
@@ -214,7 +210,7 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
 
           if (filter == 'pending') {
 
-            const uploadedImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
+            const uploadedImages = await EIS.getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
 
             return res.status(200).json({
                 PendingEventImages: uploadedImages.rows
@@ -222,14 +218,14 @@ export const getUploadedEventImagesForStaffController = async (req, res) => {
 
         } else if (filter == 'printed') {
 
-            const uploadedImages = await getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
+            const uploadedImages = await EIS.getPendingEventsImagesForAdmin(loggedInStaff.id, filter);
 
             return res.status(200).json({
                 PrintedEventImages: uploadedImages.rows
             });
 
         } 
-            const uploadedImages = await getEventsImagesForAdmin(loggedInStaff.id);
+            const uploadedImages = await EIS.getEventsImagesForAdmin(loggedInStaff.id);
 
         return res.status(200).json({
             AllEventImages: uploadedImages.rows
