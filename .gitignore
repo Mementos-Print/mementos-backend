@@ -1,0 +1,14 @@
+node_modules
+dist
+.env
+.env.test
+coverage
+.vscode
+.idea
+.DS_Store
+npm-debug.log*
+.pnpm-debug.log*
+build
+/src/generated/prisma
+
+/generated/prisma
