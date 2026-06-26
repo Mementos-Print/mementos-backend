@@ -8,4 +8,7 @@ export const env = z
       .enum(["development", "test", "production"])
       .default("development"),
     DATABASE_URL: z.string().url(),
-  }).parse(process.env);
+    ACCESS_SECRET: z.string(),
+    REFRESH_SECRET: z.string(),
+  })
+  .parse(process.env);

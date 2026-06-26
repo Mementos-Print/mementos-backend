@@ -15,7 +15,7 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String
-  role      String   @default("USER")
+  role      Role     @default(USER)
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -23,17 +23,8 @@ model User {
   @@map("users")
 }
 
-model Staff {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  name      String
-  role      StaffRole
-  password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-enum StaffRole {
+enum Role {
   STAFF
   ADMIN
+  USER
 }
