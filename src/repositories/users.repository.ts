@@ -6,11 +6,15 @@ export class UserRepository {
   static async getUserByEmailTx(email: string, tx: Prisma.TransactionClient) {
     return tx.user.findUnique({
       where: { email },
+      include: { authProviders: true },
     });
-  };
+  }
 
-  static CreateOrIgnore(data: UserCredentialsDto, tx: Prisma.TransactionClient) {
-    return db.user.upsert({
+  static createOrIgnore(
+    data: UserCredentialsDto,
+    tx: Prisma.TransactionClient,
+  ) {
+    return tx.user.upsert({
       where: { email: data.email },
       update: {},
       create: {
@@ -19,11 +23,11 @@ export class UserRepository {
         password: data.password,
       },
     });
-  };
+  }
 
   static getUserByEmail(email: string) {
     return db.user.findUnique({
-      where: {email}
+      where: { email },
     });
-  };
+  }
 }

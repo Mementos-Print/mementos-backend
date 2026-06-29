@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from "zod";
 import "dotenv/config";
 
 export const env = z
@@ -10,5 +10,8 @@ export const env = z
     DATABASE_URL: z.string().url(),
     ACCESS_SECRET: z.string(),
     REFRESH_SECRET: z.string(),
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
+    CALLBACK_URL: z.string().url(),
   })
   .parse(process.env);

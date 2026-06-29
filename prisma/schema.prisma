@@ -12,13 +12,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  role      Role     @default(USER)
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  role          Role           @default(USER)
+  password      String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  authProviders AuthProvider[]
 
   @@map("users")
 }
@@ -27,4 +28,29 @@ enum Role {
   STAFF
   ADMIN
   USER
+}
+
+model AuthProvider {
+  id             String   @id @default(uuid())
+  userId         String
+  provider       String
+  providerUserId String
+  providerEmail  String?
+
+  accessTokenHash  String?
+  refreshTokenHash String?
+  expiresAt        DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerUserId])
+  @@map("providers")
+}
+
+enum AuthType {
+  GOOGLE
 }
