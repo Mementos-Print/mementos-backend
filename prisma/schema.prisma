@@ -20,7 +20,10 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   authProviders AuthProvider[]
+  events        Event[]
 
+  @@index([id])
+  @@index([email])
   @@map("users")
 }
 
@@ -31,7 +34,7 @@ enum Role {
 }
 
 model AuthProvider {
-  id             String   @id @default(uuid())
+  id             String  @id @default(uuid())
   userId         String
   provider       String
   providerUserId String
@@ -53,4 +56,24 @@ model AuthProvider {
 
 enum AuthType {
   GOOGLE
+}
+
+model Event {
+  id         String   @id
+  title      String
+  staff_id   String
+  event_date DateTime
+  status     Status
+
+  staff User @relation(fields: [staff_id], references: [id])
+
+  @@index([id])
+  @@index([staff_id])
+  @@map("events")
+}
+
+enum Status {
+  PENDING
+  ONGOING
+  COMPLETED
 }
