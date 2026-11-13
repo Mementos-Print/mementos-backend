@@ -63,7 +63,7 @@ model Event {
   title      String
   staff_id   String
   event_date DateTime
-  status     Status
+  status     Status @default(PENDING)
 
   staff User @relation(fields: [staff_id], references: [id])
 

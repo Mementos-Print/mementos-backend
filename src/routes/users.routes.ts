@@ -9,4 +9,4 @@ export const userRouter = Router();
 userRouter.post("/register", registerController);
 userRouter.post("/login", loginController);
 userRouter.get("/google", OAuth.googleSignIn);
-userRouter.get("/google/callback", OAuth.googleSignInCallback, OAuthCallbackController,);
+userRouter.get("/google/callback", OAuth.googleSignInCallback, OAuthCallbackController);
